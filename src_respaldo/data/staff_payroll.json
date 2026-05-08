@@ -1,0 +1,1422 @@
+[
+  {
+    "cedula": "16298584",
+    "nombre_completo": "YENNY GONZALEZ",
+    "tipo": "docente",
+    "cargo": "DOC. III/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "DIRECTORA R"
+  },
+  {
+    "cedula": "9736720",
+    "nombre_completo": "FRANCISCO GONZALEZ",
+    "tipo": "docente",
+    "cargo": "DOC. IV/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "SUB DIRECTOR ADMINISTRATIVO"
+  },
+  {
+    "cedula": "9734976",
+    "nombre_completo": "LISBETH BASTIDAS",
+    "tipo": "docente",
+    "cargo": "DOC. I/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "SUB DIRECTORA ACADEMICO"
+  },
+  {
+    "cedula": "12867906",
+    "nombre_completo": "ANDRES FERNANDEZ",
+    "tipo": "docente",
+    "cargo": "DOC.I/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "DOCENTE CONTROL Y EVALUACION"
+  },
+  {
+    "cedula": "18704774",
+    "nombre_completo": "GENISIS PULGAR",
+    "tipo": "docente",
+    "cargo": "DOC. II/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "COORDINACIÓN PEDAGOGICA 1 A 3"
+  },
+  {
+    "cedula": "18312127",
+    "nombre_completo": "CARLOS VALLES",
+    "tipo": "docente",
+    "cargo": "DOC. II/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "COORDINADOR PEDAGOGICO 4 Y 5TO AÑO"
+  },
+  {
+    "cedula": "17833718",
+    "nombre_completo": "ANGELINA FUENMAYOR",
+    "tipo": "docente",
+    "cargo": "DOC. IV/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "DOCENTE ORIENTADORA"
+  },
+  {
+    "cedula": "19645653",
+    "nombre_completo": "ERICK ZABALETA",
+    "tipo": "docente",
+    "cargo": "DOC. (NG)/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "ENLACE DE PTMS"
+  },
+  {
+    "cedula": "14862697",
+    "nombre_completo": "ADRIANA BRIÑEZ",
+    "tipo": "docente",
+    "cargo": "DOC. I/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "DOCENTE ENLACE CULTURA"
+  },
+  {
+    "cedula": "13371785",
+    "nombre_completo": "ROSALINA RIVERA",
+    "tipo": "docente",
+    "cargo": "DOC. V/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "COORDINADORA DE CULTURA"
+  },
+  {
+    "cedula": "9510626",
+    "nombre_completo": "JANETH RIVERO",
+    "tipo": "docente",
+    "cargo": "DOC. II/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "COORDINADOR PTMS"
+  },
+  {
+    "cedula": "17566853",
+    "nombre_completo": "JAIKLIN VASQUEZ",
+    "tipo": "docente",
+    "cargo": "DOC. (NG)/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "COORDINADOR CBIT"
+  },
+  {
+    "cedula": "31024533",
+    "nombre_completo": "YUREIBIS OLIVEROS",
+    "tipo": "docente",
+    "cargo": "DOC. I/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "COORDINADOR CRA"
+  },
+  {
+    "cedula": "13653621",
+    "nombre_completo": "MARLYN SALAZAR",
+    "tipo": "docente",
+    "cargo": "DOC. II/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "COORDINADOR INTER CULTURAL"
+  },
+  {
+    "cedula": "10429590",
+    "nombre_completo": "IRENE GONZALEZ",
+    "tipo": "docente",
+    "cargo": "DOC. (NG)/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "COORDINADOR CRA"
+  },
+  {
+    "cedula": "4145187",
+    "nombre_completo": "GLADYS RODRIGUEZ",
+    "tipo": "docente",
+    "cargo": "DOC. IV/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "DOCENTE JUBILADA EN OCT-2024"
+  },
+  {
+    "cedula": "5038727",
+    "nombre_completo": "MARIA ALFONSO",
+    "tipo": "docente",
+    "cargo": "DOC. IV/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "DOCENTE"
+  },
+  {
+    "cedula": "6805703",
+    "nombre_completo": "GINETH CASTILLO",
+    "tipo": "docente",
+    "cargo": "DOC. VI/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "DOCENTE JUBILADA EN OCT-2024"
+  },
+  {
+    "cedula": "7826056",
+    "nombre_completo": "CARMEN GALVAN",
+    "tipo": "docente",
+    "cargo": "DOC. IV/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "DOCENTE JUBILADO 31-07-2025 RESOLUCIÓN DM 008"
+  },
+  {
+    "cedula": "9743297",
+    "nombre_completo": "ROGER RIVERO",
+    "tipo": "docente",
+    "cargo": "DOC. (NG)/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "9770174",
+    "nombre_completo": "MARITZA CHAVEZ",
+    "tipo": "docente",
+    "cargo": "DOC. III/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "10405790",
+    "nombre_completo": "ARCELIA RODRIGUEZ",
+    "tipo": "docente",
+    "cargo": "DOC. IV/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "10432180",
+    "nombre_completo": "YASNITH PADRON",
+    "tipo": "docente",
+    "cargo": "DOC. I/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "11069450",
+    "nombre_completo": "YUNEIDY PORTILLO",
+    "tipo": "docente",
+    "cargo": "DOC. II/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "11287400",
+    "nombre_completo": "YUSBEIRY FUENMAYOR",
+    "tipo": "docente",
+    "cargo": "DOC. IV/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "11721189",
+    "nombre_completo": "LISSETH MOLERO",
+    "tipo": "docente",
+    "cargo": "DOC. V/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "11861973",
+    "nombre_completo": "LILIANA FARIA",
+    "tipo": "docente",
+    "cargo": "DOC. V/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "DOCENTE FALLECIDO EL DIA 22-10-2024"
+  },
+  {
+    "cedula": "12327525",
+    "nombre_completo": "YIDRIS FUENMAYOR",
+    "tipo": "docente",
+    "cargo": "DOC. (NG)/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "12695226",
+    "nombre_completo": "LEUDIS FERRER",
+    "tipo": "docente",
+    "cargo": "DOC. IV  /AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "DOCENTE JUBILADO 31-07-2025 RESOLUCIÓN DM 008"
+  },
+  {
+    "cedula": "12867704",
+    "nombre_completo": "GLEN VILLALOBOS",
+    "tipo": "docente",
+    "cargo": "DOC. II/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "13005137",
+    "nombre_completo": "NERIO TERAN",
+    "tipo": "docente",
+    "cargo": "DOC. IV/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "PAGO SUSPENDIDO DESDE JUNIO 2025"
+  },
+  {
+    "cedula": "13628986",
+    "nombre_completo": "CIRA VILLALOBOS",
+    "tipo": "docente",
+    "cargo": "DOC. IV/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "13876524",
+    "nombre_completo": "BETTY GUTIERREZ",
+    "tipo": "docente",
+    "cargo": "DOC. IV/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "14137464",
+    "nombre_completo": "EDWAR MARIN",
+    "tipo": "docente",
+    "cargo": "DOC. (NG)/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "14356535",
+    "nombre_completo": "LILIAN GONZALEZ",
+    "tipo": "docente",
+    "cargo": "DOC. III/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "17087025",
+    "nombre_completo": "LISBETH OLLARVEZ",
+    "tipo": "docente",
+    "cargo": "DOC. IV/AULA BOLIV.",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "17184804",
+    "nombre_completo": "JARLIS VICUÑA",
+    "tipo": "docente",
+    "cargo": "DOC. I/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "SE CERTIFICA QUE ESTA ACTIVO EN LA INSTITUCION"
+  },
+  {
+    "cedula": "17565191",
+    "nombre_completo": "CARLOS RINCON",
+    "tipo": "docente",
+    "cargo": "DOC. IV/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "17565517",
+    "nombre_completo": "BEKERIN WITZGALL",
+    "tipo": "docente",
+    "cargo": "DOC. IV/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "17565610",
+    "nombre_completo": "MARILU URDANETA",
+    "tipo": "docente",
+    "cargo": "DOC. IV/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "17634574",
+    "nombre_completo": "MAIRELY FUENMAYOR",
+    "tipo": "docente",
+    "cargo": "DOC. V/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "17634609",
+    "nombre_completo": "NAILY VALBUENA",
+    "tipo": "docente",
+    "cargo": "DOC. (NG)/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "FALLECIDO EL DIA 02-01-2023"
+  },
+  {
+    "cedula": "17634611",
+    "nombre_completo": "DANIFER CHAVEZ",
+    "tipo": "docente",
+    "cargo": "DOC. IV/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "17636659",
+    "nombre_completo": "ANA RIVERA",
+    "tipo": "docente",
+    "cargo": "DOC. IV/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "SE CERTIFICA QUE ESTA ACTIVO EN LA INSTITUCION"
+  },
+  {
+    "cedula": "17938242",
+    "nombre_completo": "DERWIN GONZALEZ",
+    "tipo": "docente",
+    "cargo": "DOC. I/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "18384543",
+    "nombre_completo": "DISKEILA ROMERO",
+    "tipo": "docente",
+    "cargo": "DOC. IV/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "18650581",
+    "nombre_completo": "VIVIANA COLINA",
+    "tipo": "docente",
+    "cargo": "DOC. V/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "PAGO SUSPENDIDO DESDE JUNIO 2025"
+  },
+  {
+    "cedula": "18662000",
+    "nombre_completo": "NATHALY FERNANDEZ",
+    "tipo": "docente",
+    "cargo": "DOC. III/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "18662136",
+    "nombre_completo": "ALBERTO VAZQUEZ",
+    "tipo": "docente",
+    "cargo": "DOC. IV/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "18662175",
+    "nombre_completo": "JOSE URDANETA",
+    "tipo": "docente",
+    "cargo": "DOC. (NG)/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "19017548",
+    "nombre_completo": "ELIANETH PULGAR",
+    "tipo": "docente",
+    "cargo": "DOC. I/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "19211028",
+    "nombre_completo": "ANDRES VALLES",
+    "tipo": "docente",
+    "cargo": "DOC. (NG)/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "19213252",
+    "nombre_completo": "YULIMAR URDANETA",
+    "tipo": "docente",
+    "cargo": "DOC. V/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "19808718",
+    "nombre_completo": "YASIBEL PULIDO",
+    "tipo": "docente",
+    "cargo": "DOC. III/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "19811692",
+    "nombre_completo": "YOSSELYN LABARCA",
+    "tipo": "docente",
+    "cargo": "DOC. II/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "20147982",
+    "nombre_completo": "HENGLIS BASTIDAS",
+    "tipo": "docente",
+    "cargo": "DOC. II/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "20204606",
+    "nombre_completo": "NEURO VALBUENA",
+    "tipo": "docente",
+    "cargo": "DOC.II/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "20508748",
+    "nombre_completo": "GINO LABARCA",
+    "tipo": "docente",
+    "cargo": "DOC. IV/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "DESDE ABRIL 2024"
+  },
+  {
+    "cedula": "20685013",
+    "nombre_completo": "JARIAGNI CHAVEZ",
+    "tipo": "docente",
+    "cargo": "DOC. (NG)/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "20834697",
+    "nombre_completo": "GUSTAVO BRIÑEZ",
+    "tipo": "docente",
+    "cargo": "DOC. II/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "20835056",
+    "nombre_completo": "KATHERINE FERNANDEZ",
+    "tipo": "docente",
+    "cargo": "DOC. I/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "22141851",
+    "nombre_completo": "MISLEIDY CONTRERAS",
+    "tipo": "docente",
+    "cargo": "DOC. (NG)/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "23466327",
+    "nombre_completo": "ALEJANDRA FERRER",
+    "tipo": "docente",
+    "cargo": "DOC. I/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "23769887",
+    "nombre_completo": "ELIANIS FERNANDEZ",
+    "tipo": "docente",
+    "cargo": "DOC. (NG)/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "23770210",
+    "nombre_completo": "CASTRO ELIBERKI",
+    "tipo": "docente",
+    "cargo": "DOC. II/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "24250015",
+    "nombre_completo": "IRISMEL GONZALEZ",
+    "tipo": "docente",
+    "cargo": "DOC. (NG)/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "25039743",
+    "nombre_completo": "RAMON DAGUIN",
+    "tipo": "docente",
+    "cargo": "DOC. (NG)/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "25763504",
+    "nombre_completo": "ANGEL QUINTERO",
+    "tipo": "docente",
+    "cargo": "DOC. (NG)/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "26093964",
+    "nombre_completo": "ANGELIANIS CASTILLO",
+    "tipo": "docente",
+    "cargo": "DOC. (NG)/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "COORDINADOR CRA"
+  },
+  {
+    "cedula": "26743304",
+    "nombre_completo": "ADRIANYS SUAREZ",
+    "tipo": "docente",
+    "cargo": "DOC. I/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "27998218",
+    "nombre_completo": "MARY YULY BERRUETA",
+    "tipo": "docente",
+    "cargo": "DOC. (NG)/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "29836341",
+    "nombre_completo": "ANDRY MATUTE",
+    "tipo": "docente",
+    "cargo": "DOC. (NG)/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "29902949",
+    "nombre_completo": "JIOVANDRI FUENMAYOR",
+    "tipo": "docente",
+    "cargo": "DOC. (NG)/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "SE CERTIFICA QUE ESTA ACTIVO EN LA INSTITUCION"
+  },
+  {
+    "cedula": "30089498",
+    "nombre_completo": "JOSE NEGRETTE",
+    "tipo": "docente",
+    "cargo": "DOC. (NG)/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "30863209",
+    "nombre_completo": "DULCE URDANETA",
+    "tipo": "docente",
+    "cargo": "DOC. I/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "31070093",
+    "nombre_completo": "DAIMERY PORTILLO",
+    "tipo": "docente",
+    "cargo": "DOC. (NG)/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "31295304",
+    "nombre_completo": "ANSELMO SALAS",
+    "tipo": "docente",
+    "cargo": "DOC. (NG)/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "31548688",
+    "nombre_completo": "XAVIER BOSCAN",
+    "tipo": "docente",
+    "cargo": "DOC. (NG)/AULA",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "10409425",
+    "nombre_completo": "BARBARA URDANETA",
+    "tipo": "secretaria",
+    "cargo": "PROFESIONAL UNIV.III",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "SECRETARIA DE 4TO Y 5TO AÑO"
+  },
+  {
+    "cedula": "10432645",
+    "nombre_completo": "CARMEN PULGAR",
+    "tipo": "secretaria",
+    "cargo": "PROFESIONAL UNIV.III",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "SECRETARIA"
+  },
+  {
+    "cedula": "12513742",
+    "nombre_completo": "MILENYS MOLERO",
+    "tipo": "secretaria",
+    "cargo": "BACHILLER II",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "SECRETRAIA DE CONTROL Y EVALUACIÓN"
+  },
+  {
+    "cedula": "14208547",
+    "nombre_completo": "NOELIS CHAVEZ",
+    "tipo": "secretaria",
+    "cargo": "PROFESIONAL UNIV. II",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "SECRETARIA DE LA COORDINACIÓN DE  5º AÑO"
+  },
+  {
+    "cedula": "16687079",
+    "nombre_completo": "YULYANA GONZALEZ",
+    "tipo": "secretaria",
+    "cargo": "PROFESIONAL UNIV.III",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "SECRETARIA DE DIRECCION"
+  },
+  {
+    "cedula": "16835698",
+    "nombre_completo": "NELLY BERRUETA",
+    "tipo": "secretaria",
+    "cargo": "PROFESIONAL UNIV.III",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "SECRETARIA DE SUBDIRECCION ACADEMICA"
+  },
+  {
+    "cedula": "18626390",
+    "nombre_completo": "YASMILEY CARRASQUERO",
+    "tipo": "secretaria",
+    "cargo": "BACHILLER II",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "SECRETARIA DE CONTROL DE ESTUDIOS"
+  },
+  {
+    "cedula": "18662109",
+    "nombre_completo": "DANIELA VERA",
+    "tipo": "secretaria",
+    "cargo": "BACHILLER II",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "SECRETARIA DE CONTROL DE ESTUDIOS"
+  },
+  {
+    "cedula": "20072295",
+    "nombre_completo": "MARIA MONTIEL",
+    "tipo": "secretaria",
+    "cargo": "PROFESIONAL UNIV. II",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "SECRETARIA DE 2º AÑO"
+  },
+  {
+    "cedula": "21229360",
+    "nombre_completo": "PELEY JULIETA",
+    "tipo": "secretaria",
+    "cargo": "BACHILLER II",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "SECRETARIA DE 1º AÑO"
+  },
+  {
+    "cedula": "6764577",
+    "nombre_completo": "LEDYS MORENO",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL III",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "ASEADORA"
+  },
+  {
+    "cedula": "6805719",
+    "nombre_completo": "ESMEYRA URDANETA",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL IV",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "SUPERVISORA DE MANTENIMIENTO INTERNO"
+  },
+  {
+    "cedula": "6805968",
+    "nombre_completo": "YAJURE JESUS",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL IV",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "ELECTRICISTA"
+  },
+  {
+    "cedula": "7708168",
+    "nombre_completo": "ALIDA MORENO",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL III",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "PORTERA"
+  },
+  {
+    "cedula": "7788697",
+    "nombre_completo": "ALI SALAS",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL IV",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "ASEADORA"
+  },
+  {
+    "cedula": "9721342",
+    "nombre_completo": "LUIS ARRIETA",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "ASEADOR JARDINERO"
+  },
+  {
+    "cedula": "9736756",
+    "nombre_completo": "JULIO PERDOMO",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "ASEADOR"
+  },
+  {
+    "cedula": "9741065",
+    "nombre_completo": "DERVIS FUENMAYOR",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL IV",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "OBRERO"
+  },
+  {
+    "cedula": "9753134",
+    "nombre_completo": "MELIDA MAYOR",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "PORTERA PORTON PRINCIPAL"
+  },
+  {
+    "cedula": "9772693",
+    "nombre_completo": "JOSE GOMEZ",
+    "tipo": "obrero",
+    "cargo": "OBRERO CERTIFICADO IV",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "OBREO"
+  },
+  {
+    "cedula": "9796496",
+    "nombre_completo": "VICTOR  URDANETA",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL IV",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "OBRERO JUBILADO 01-12-2024"
+  },
+  {
+    "cedula": "11297721",
+    "nombre_completo": "DEIVIS MATOS",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL III",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "ELECTRICISTA"
+  },
+  {
+    "cedula": "11392199",
+    "nombre_completo": "JOSE INCIARTE",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "ASEADOR"
+  },
+  {
+    "cedula": "11607576",
+    "nombre_completo": "BELKIS CARABALLO",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "ASEADORA"
+  },
+  {
+    "cedula": "11876371",
+    "nombre_completo": "CLARIBEL VILLASMIL",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL III",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "ASEADORA"
+  },
+  {
+    "cedula": "12871310",
+    "nombre_completo": "JIM FERNANDEZ",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL IV",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "JARDINERO"
+  },
+  {
+    "cedula": "13002947",
+    "nombre_completo": "YESENIA FUENMAYOR",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "OBRERO CON FUNCI{ON DOCENTE"
+  },
+  {
+    "cedula": "13005173",
+    "nombre_completo": "YURANY FUENMAYOR",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "SECRETARIA DE LA COORDINACIÓN DE  3º AÑO"
+  },
+  {
+    "cedula": "13005174",
+    "nombre_completo": "ANA RAMIREZ",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL IV",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "ASEADOR"
+  },
+  {
+    "cedula": "13005181",
+    "nombre_completo": "BELKIS URDANETA",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "ASEADORA"
+  },
+  {
+    "cedula": "13005763",
+    "nombre_completo": "YANURY VILLALOBOS",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "ASEADORA"
+  },
+  {
+    "cedula": "13829829",
+    "nombre_completo": "CARMEN  URDANETA",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL III",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "SUPERVISOR DE MANTENIMIENTO INTERNO"
+  },
+  {
+    "cedula": "14522355",
+    "nombre_completo": "RAMON VALBUENA",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "OBRERO"
+  },
+  {
+    "cedula": "14545782",
+    "nombre_completo": "YULIRBEL MAYOR",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "OBREO"
+  },
+  {
+    "cedula": "14736564",
+    "nombre_completo": "IREN SANCHEZ",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "ASEADOR"
+  },
+  {
+    "cedula": "14833231",
+    "nombre_completo": "LISBEIRA PEREZ",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "AUXILIAR SUPERVISOR DE MANTENIMIENTO"
+  },
+  {
+    "cedula": "14921932",
+    "nombre_completo": "GREGORIA  OLIVEROS",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL III",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "ASEADOR"
+  },
+  {
+    "cedula": "15261662",
+    "nombre_completo": "YITZELY BERMUDEZ",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "SECRETARIA DE CONTROL DE ESTUDIOS"
+  },
+  {
+    "cedula": "15411774",
+    "nombre_completo": "ODRIS FERNANDEZ",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "ASEADORA"
+  },
+  {
+    "cedula": "16559945",
+    "nombre_completo": "YUSMARY  OLIVEROS",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "PORTERA (PORTON DE SERVICIOS)"
+  },
+  {
+    "cedula": "16561760",
+    "nombre_completo": "DIANA BALZAN",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "ASEADOR"
+  },
+  {
+    "cedula": "16729349",
+    "nombre_completo": "FRANCISCO IRIARTE",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL III",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "17099313",
+    "nombre_completo": "JULIO GONZALEZ",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "JARDINERO"
+  },
+  {
+    "cedula": "17565199",
+    "nombre_completo": "NARIANIS ZAMBRANO",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "ASEADORA"
+  },
+  {
+    "cedula": "18429953",
+    "nombre_completo": "STALIN FERNANDEZ",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "PORTERO"
+  },
+  {
+    "cedula": "19072831",
+    "nombre_completo": "KEINY URDANETA",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "ASEADOR"
+  },
+  {
+    "cedula": "19810118",
+    "nombre_completo": "EVELANJE MORENO",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "ASEADOR"
+  },
+  {
+    "cedula": "19810688",
+    "nombre_completo": "KATHERINE URDANETA",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "ASEADOR"
+  },
+  {
+    "cedula": "19811115",
+    "nombre_completo": "MAIKELYN CARABALLO",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "SECRETARIA DE BIBLIOTECA"
+  },
+  {
+    "cedula": "21228268",
+    "nombre_completo": "CLAURYS FERNANDEZ",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "PORTERO PORTON DE ESTACIONAMIENTO"
+  },
+  {
+    "cedula": "21228284",
+    "nombre_completo": "ELAGUILA  ALBERT",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL III",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "DESDE ABRIL 2024"
+  },
+  {
+    "cedula": "22152794",
+    "nombre_completo": "ANA MORALES",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "SE CERTIFICA QUE ESTA ACTIVO EN LA INSTITUCION"
+  },
+  {
+    "cedula": "23770217",
+    "nombre_completo": "EURO PULGAR",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "ASEADOR - SEPTIEMBRE 2022"
+  },
+  {
+    "cedula": "24250406",
+    "nombre_completo": "JESUS YAJURE",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "INASISTENCIAS DESDE JUNIO 2024"
+  },
+  {
+    "cedula": "24250410",
+    "nombre_completo": "BAIVELIS URDANETA",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "OBREO CON FUNCIÓN DOCENTE"
+  },
+  {
+    "cedula": "25039662",
+    "nombre_completo": "GISELY ACOSTA",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "ASEADOR"
+  },
+  {
+    "cedula": "25596496",
+    "nombre_completo": "ELVIS MATOS",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "MENSAJERO"
+  },
+  {
+    "cedula": "26169240",
+    "nombre_completo": "RAILYS RODRIGUEZ",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "PORTERO ESTACIONAMIENTO"
+  },
+  {
+    "cedula": "26710106",
+    "nombre_completo": "LUIS GONZALEZ",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "28000990",
+    "nombre_completo": "ELIAS ARBELAEZ",
+    "tipo": "obrero",
+    "cargo": "OBRERO GENERAL I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": null
+  },
+  {
+    "cedula": "5828954",
+    "nombre_completo": "GERMAN MATOS",
+    "tipo": "obrero",
+    "cargo": "VIGILANTE III",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "VIGILANTE"
+  },
+  {
+    "cedula": "9766606",
+    "nombre_completo": "EDWARD NAVA",
+    "tipo": "obrero",
+    "cargo": "OBRERO CERTIFICADO I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "VIGILANTE"
+  },
+  {
+    "cedula": "15559024",
+    "nombre_completo": "DERVIS ROJAS",
+    "tipo": "obrero",
+    "cargo": "VIGILANTE I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "VIGILANTE"
+  },
+  {
+    "cedula": "30299299",
+    "nombre_completo": "ANGEL FINOL",
+    "tipo": "obrero",
+    "cargo": "VIGILANTE I",
+    "grado_asignado": null,
+    "seccion_asignada": null,
+    "materia": null,
+    "area_atencion": "VIGILANTE"
+  }
+]

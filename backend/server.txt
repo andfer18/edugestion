@@ -1,0 +1,600 @@
+require('dotenv').config();
+const express = require('express');
+const mysql = require('mysql2/promise');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const cors = require('cors');
+const crypto = require('crypto');
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// Pool de conexiones a MariaDB
+const pool = mysql.createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    waitForConnections: true,
+    connectionLimit: 10
+});
+
+// Middleware de autenticación
+const authMiddleware = async (req, res, next) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) return res.status(401).json({ error: 'Token requerido' });
+        
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded;
+        next();
+    } catch (error) {
+        res.status(401).json({ error: 'Token inválido' });
+    }
+};
+// Almacén temporal para el flujo de login (se limpia solo cada 5 min)
+const loginTemporal = new Map();
+setInterval(() => {
+    const ahora = Date.now();
+    for (const [token, data] of loginTemporal) {
+        if (data.expira < ahora) loginTemporal.delete(token);
+    }
+}, 5 * 60 * 1000);
+
+// ============================================
+// RUTAS DE AUTENTICACIÓN
+// ============================================
+
+// PASO 1: Verificar cédula
+app.post('/api/login/cedula', async (req, res) => {
+    try {
+        const { cedula } = req.body;
+        const ci = String(cedula).trim().toUpperCase();
+
+        if (!ci) {
+            return res.status(400).json({ ok: false, msg: 'Ingrese la cédula' });
+        }
+
+        const [personas] = await pool.execute(
+            `SELECT id, cedula, nombres, apellidos, grado_asignado, materia_especialidad 
+             FROM personal 
+             WHERE cedula = ? AND estado = 'activo'`, [ci]
+        );
+
+        if (personas.length === 0) {
+            return res.status(404).json({ ok: false, msg: 'Cédula no registrada en el sistema' });
+        }
+
+        const personaPrincipal = personas[0];
+        let roles = [];
+
+        // 1. Buscar roles especiales (coordinador, directivos) usando la cédula
+        const [rolesEspeciales] = await pool.query(
+            `SELECT pr.id AS asignacion_id, r.codigo, r.nombre, r.icono, r.color, pr.etiqueta, pr.ruta_dashboard
+             FROM personal_rol pr
+             INNER JOIN roles r ON pr.rol_id = r.id
+             INNER JOIN personal p ON pr.personal_id = p.id
+             WHERE p.cedula = ? AND pr.activo = 1 AND r.codigo != 'docente'
+             ORDER BY FIELD(r.codigo, 'sistema', 'ctrl_estudios', 'directivos', 'secretaria')`,
+            [ci]
+        );
+        roles = rolesEspeciales;
+
+        // 2. Si tiene al menos una asignación de materia, agregar rol DOCENTE automáticamente
+        const tieneAsignacion = personas.some(p => p.materia_especialidad && p.grado_asignado);
+        if (tieneAsignacion) {
+            roles.push({
+                asignacion_id: personaPrincipal.id,
+                codigo: 'docente',
+                nombre: 'Docente',
+                icono: 'fa-chalkboard-user',
+                color: '#1a3a6e',
+                etiqueta: 'DOCENTE',
+                ruta_dashboard: '/docente'
+            });
+        }
+
+        if (roles.length === 0) {
+            return res.status(403).json({ ok: false, msg: 'Sin roles asignados. Contacte al administrador.' });
+        }
+
+        const token = crypto.randomBytes(32).toString('hex');
+        loginTemporal.set(token, {
+            personalId: personaPrincipal.id,
+            cedula: personaPrincipal.cedula,
+            nombres: personaPrincipal.nombres,
+            apellidos: personaPrincipal.apellidos,
+            roles,
+            autenticado: false,
+            expira: Date.now() + 5 * 60 * 1000
+        });
+
+        res.json({
+            ok: true,
+            token,
+            nombreCompleto: `${personaPrincipal.nombres} ${personaPrincipal.apellidos}`,
+            cantidadRoles: roles.length
+        });
+
+    } catch (err) {
+        console.error('Error en /api/login/cedula:', err);
+        res.status(500).json({ ok: false, msg: 'Error del servidor' });
+    }
+});
+
+// PASO 2: Verificar contraseña + validar dispositivo (DISPOSITIVO DESACTIVADO TEMPORALMENTE)
+app.post('/api/login/contrasena', async (req, res) => {
+    try {
+        const { token, contrasena, fingerprint, navegador, pantalla } = req.body;
+        const temp = loginTemporal.get(token);
+
+        if (!temp) {
+            return res.status(401).json({ ok: false, msg: 'Sesión expirada, vuelva a ingresar su cédula' });
+        }
+
+        const passIngresada = String(contrasena).trim().toUpperCase();
+        const passCorrecta   = String(temp.cedula).trim().toUpperCase();
+
+        if (passIngresada !== passCorrecta) {
+            return res.status(401).json({ ok: false, msg: 'Contraseña incorrecta' });
+        }
+
+        // === VALIDACIÓN DE DISPOSITIVO DESACTIVADA TEMPORALMENTE ===
+        let dispositivoNuevo = false;
+
+        temp.autenticado = true;
+
+        if (temp.roles.length === 1) {
+            loginTemporal.delete(token);
+            const sessionToken = jwt.sign(
+                { id: temp.personalId, cedula: temp.cedula, nombres: temp.nombres, apellidos: temp.apellidos, rol: { codigo: temp.roles[0].codigo, nombre: temp.roles[0].nombre, etiqueta: temp.roles[0].etiqueta, icono: temp.roles[0].icono, color: temp.roles[0].color, ruta: temp.roles[0].ruta_dashboard, grado_elegido: temp.roles[0].grado_elegido, materia_elegida: temp.roles[0].materia_elegida } },
+                process.env.JWT_SECRET,
+                { expiresIn: '8h' }
+            );
+            return res.json({ ok: true, redirigir: true, rol: temp.roles[0], sessionToken, dispositivoNuevo });
+        }
+
+        return res.json({ ok: true, redirigir: false, roles: temp.roles, dispositivoNuevo });
+
+    } catch (err) {
+        console.error('Error en /api/login/contrasena:', err);
+        res.status(500).json({ ok: false, msg: 'Error del servidor' });
+    }
+});
+
+
+// PASO 3: Seleccionar rol
+app.post('/api/login/rol', async (req, res) => {
+    try {
+        const { token, asignacionId } = req.body;
+        const temp = loginTemporal.get(token);
+
+        if (!temp || !temp.autenticado) {
+            return res.status(401).json({ ok: false, msg: 'Acceso no autorizado' });
+        }
+
+        const rolElegido = temp.roles.find(r => r.asignacion_id === Number(asignacionId));
+        if (!rolElegido) {
+            return res.status(403).json({ ok: false, msg: 'Rol no válido' });
+        }
+
+        loginTemporal.delete(token);
+        const sessionToken = jwt.sign(
+            { id: temp.personalId, cedula: temp.cedula, nombres: temp.nombres, apellidos: temp.apellidos, rol: { codigo: rolElegido.codigo, nombre: rolElegido.nombre, etiqueta: rolElegido.etiqueta, icono: rolElegido.icono, color: rolElegido.color, ruta: rolElegido.ruta_dashboard, grado_elegido: rolElegido.grado_elegido, materia_elegida: rolElegido.materia_elegida } },
+            process.env.JWT_SECRET,
+            { expiresIn: '8h' }
+        );
+
+        res.json({ ok: true, rol: rolElegido, sessionToken });
+
+    } catch (err) {
+        console.error('Error en /api/login/rol:', err);
+        res.status(500).json({ ok: false, msg: 'Error del servidor' });
+    }
+});
+// Asignaciones del docente (desde tabla personal)
+app.get('/api/docente/asignaciones/:cedula', async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            `SELECT grado_asignado AS grado, seccion_asignada AS secciones_raw, materia_especialidad AS materia
+             FROM (
+                 SELECT grado_asignado, seccion_asignada, materia_especialidad 
+                 FROM personal WHERE cedula = ? AND estado = 'activo' AND materia_especialidad IS NOT NULL
+                 UNION ALL
+                 SELECT grado_asignado, seccion_asignada, materia_especialidad 
+                 FROM asignaciones_docentes WHERE cedula = ?
+             ) AS combinadas`,
+            [req.params.cedula, req.params.cedula]
+        );
+
+        // Expandir "A B C D" → 4 objetos separados
+        const asignaciones = [];
+        for (const row of rows) {
+            if (!row.secciones_raw || !row.grado) continue;
+            
+            // Separar por espacio, coma o ambos: "A B C D" o "A, B, C, D"
+            const secciones = row.secciones_raw
+                .split(/[, ]+/)
+                .map(s => s.trim())
+                .filter(s => s.length > 0);
+
+            for (const sec of secciones) {
+                asignaciones.push({
+                    grado: row.grado,
+                    seccion: sec,
+                    materia: row.materia
+                });
+            }
+        }
+
+        res.json(asignaciones);
+    } catch (err) {
+        res.status(500).json({ error: 'Error al consultar asignaciones' });
+    }
+});
+// Cancelar login
+app.post('/api/login/cancelar', (req, res) => {
+    const { token } = req.body;
+    if (token) loginTemporal.delete(token);
+    res.json({ ok: true });
+});
+// ============================================
+// GESTIÓN DE DISPOSITIVOS (para Coordinador/Sistema)
+// ============================================
+
+// Ver dispositivos de una persona
+app.get('/api/admin/dispositivos/:personalId', authMiddleware, async (req, res) => {
+    try {
+        const [rows] = await pool.execute(
+            `SELECT d.id, d.fingerprint_hash, d.navegador_info, d.pantalla,
+                    d.fecha_registro, d.ultimo_acceso, d.activo,
+                    CONCAT(p.nombres, ' ', p.apellidos) AS nombre_personal
+             FROM dispositivos_autorizados d
+             JOIN personal p ON d.personal_id = p.id
+             WHERE d.personal_id = ?
+             ORDER BY d.fecha_registro DESC`,
+            [req.params.personalId]
+        );
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: 'Error al consultar dispositivos' });
+    }
+});
+
+// Desactivar un dispositivo
+app.delete('/api/admin/dispositivos/:id', authMiddleware, async (req, res) => {
+    try {
+        await pool.execute(
+            `UPDATE dispositivos_autorizados SET activo = 0 WHERE id = ?`,
+            [req.params.id]
+        );
+        res.json({ ok: true, msg: 'Dispositivo desactivado' });
+    } catch (err) {
+        res.status(500).json({ error: 'Error al desactivar dispositivo' });
+    }
+});
+
+// Autorizar un dispositivo manualmente
+app.post('/api/admin/dispositivos/autorizar', authMiddleware, async (req, res) => {
+    try {
+        const { personalId, fingerprintHash, navegador, pantalla } = req.body;
+        await pool.execute(
+            `INSERT INTO dispositivos_autorizados (personal_id, fingerprint_hash, navegador_info, pantalla)
+             VALUES (?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE activo = 1`,
+            [personalId, fingerprintHash, navegador, pantalla]
+        );
+        res.json({ ok: true, msg: 'Dispositivo autorizado' });
+    } catch (err) {
+        res.status(500).json({ error: 'Error al autorizar dispositivo' });
+    }
+});
+
+// ============================================
+// ASISTENCIAS
+// ============================================
+
+
+app.get('/api/docente/asistencia/:seccion_id/:fecha/:momento', async (req, res) => {
+    try {
+        const [rows] = await pool.execute(
+            `SELECT estudiante_id, estado FROM asistencias 
+             WHERE seccion_id = ? AND fecha = ? AND momento = ?`,
+            [req.params.seccion_id, req.params.fecha, req.params.momento]
+        );
+        const estadoMap = {};
+        rows.forEach(r => { estadoMap[r.estudiante_id] = r.estado; });
+        res.json(estadoMap);
+    } catch (err) {
+        res.status(500).json({ error: 'Error al consultar asistencia' });
+    }
+});
+
+app.post('/api/docente/asistencia', async (req, res) => {
+    try {
+        const { registros, fecha, momento, seccion_id, docente_cedula } = req.body;
+        if (!registros || registros.length === 0) return res.status(400).json({ error: 'No hay registros' });
+
+        const valores = registros.map(r => [
+            r.estudiante_id, seccion_id, fecha, momento, r.estado, docente_cedula
+        ]);
+
+        await pool.query(`
+            INSERT INTO asistencias (estudiante_id, seccion_id, fecha, momento, estado, docente_cedula)
+            VALUES ?
+            ON DUPLICATE KEY UPDATE estado = VALUES(estado)
+        `, [valores]);
+
+        res.json({ success: true, mensaje: 'Asistencia guardada correctamente' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error al guardar asistencia' });
+    }
+});
+
+app.get('/api/docente/asistencia/historial/:grado_id/:seccion/:cedula', async (req, res) => {
+    try {
+        const [rows] = await pool.execute(
+            `SELECT DISTINCT a.fecha 
+             FROM asistencias a
+             JOIN secciones s ON a.seccion_id = s.id
+             WHERE s.grado_id = ? AND s.nombre = ? AND a.docente_cedula = ?
+             ORDER BY a.fecha DESC`,
+            [req.params.grado_id, req.params.seccion, req.params.cedula]
+        );
+        // Devolver solo un array de strings de fechas: ["2024-10-25", "2024-10-24", ...]
+        const fechas = rows.map(r => r.fecha.toISOString().split('T')[0]);
+        res.json(fechas);
+    } catch (err) {
+        res.status(500).json({ error: 'Error al consultar historial' });
+    }
+});
+// ==================== ENDPOINTS UNIFICADOS DE EVALUACIONES ====================
+
+// Obtener evaluaciones (cuantitativas o cualitativas)
+app.get('/api/docente/evaluaciones', authMiddleware, async (req, res) => {
+    const { grado_id, seccion, materia, momento, tipo } = req.query;
+    try {
+        const [rows] = await pool.execute(
+            `SELECT * FROM evaluaciones 
+             WHERE grado_id = ? AND seccion = ? AND materia = ? AND momento = ? AND tipo = ? AND activa = 1 
+             ORDER BY orden ASC, id ASC`,
+            [grado_id, seccion, materia, momento, tipo]
+        );
+        res.json(rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al obtener evaluaciones' });
+    }
+});
+
+// Crear evaluación
+app.post('/api/docente/evaluaciones', authMiddleware, async (req, res) => {
+    const { nombre, grado_id, seccion, materia, momento, tipo, puntaje_maximo, docente_cedula } = req.body;
+    try {
+        // Obtener el siguiente orden
+        const [maxOrd] = await pool.execute(
+            `SELECT COALESCE(MAX(orden), 0) + 1 AS next_ord FROM evaluaciones 
+             WHERE grado_id = ? AND seccion = ? AND materia = ? AND momento = ? AND tipo = ?`,
+            [grado_id, seccion, materia, momento, tipo]
+        );
+        const orden = maxOrd[0].next_ord;
+
+        const [result] = await pool.execute(
+            `INSERT INTO evaluaciones (docente_cedula, grado_id, seccion, materia, momento, nombre, tipo, puntaje_maximo, orden, periodo_id)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 2)`,
+            [docente_cedula, grado_id, seccion, materia, momento, nombre, tipo, puntaje_maximo || 20, orden]
+        );
+        res.json({ id: result.insertId, nombre, puntaje_maximo: puntaje_maximo || 20 });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al crear evaluación' });
+    }
+});
+
+// Eliminar evaluación y sus notas
+app.delete('/api/docente/evaluaciones/:id', authMiddleware, async (req, res) => {
+    try {
+        await pool.execute('DELETE FROM notas_detalladas WHERE evaluacion_id = ?', [req.params.id]);
+        await pool.execute('DELETE FROM evaluaciones WHERE id = ?', [req.params.id]);
+        res.json({ success: true });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al eliminar evaluación' });
+    }
+});
+
+// Guardar/Actualizar notas (recibe array)
+app.post('/api/docente/notas-detalladas', authMiddleware, async (req, res) => {
+    const { notas } = req.body;
+    if (!notas || notas.length === 0) return res.status(400).json({ error: 'No hay notas' });
+    try {
+        const valores = notas.map(n => [n.evaluacion_id, n.estudiante_id, n.nota_valor]);
+        await pool.query(
+            `INSERT INTO notas_detalladas (evaluacion_id, estudiante_id, nota_valor) 
+             VALUES ? 
+             ON DUPLICATE KEY UPDATE nota_valor = VALUES(nota_valor)`,
+            [valores]
+        );
+        res.json({ success: true });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al guardar notas' });
+    }
+});
+
+// Obtener notas por conjunto de evaluaciones
+app.post('/api/docente/notas-detalladas/get', authMiddleware, async (req, res) => {
+    const { evaluaciones_ids } = req.body;
+    if (!evaluaciones_ids || evaluaciones_ids.length === 0) return res.json([]);
+    try {
+        const [rows] = await pool.execute(
+            `SELECT evaluacion_id, estudiante_id, nota_valor 
+             FROM notas_detalladas 
+             WHERE evaluacion_id IN (?)`,
+            [evaluaciones_ids]
+        );
+        res.json(rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al obtener notas' });
+    }
+});
+
+// Endpoint de cierre de momento
+app.get('/api/momentos/cerrado', async (req, res) => {
+    const { lapso } = req.query;
+    try {
+        const [rows] = await pool.execute(
+            `SELECT cerrado FROM momentos_cierre WHERE lapso = ? ORDER BY id DESC LIMIT 1`,
+            [lapso]
+        );
+        res.json({ cerrado: rows.length > 0 ? rows[0].cerrado === 1 : false });
+    } catch (error) {
+        res.json({ cerrado: false }); // Si no hay tabla, asume abierto
+    }
+});
+// ============================================
+// INCIDENCIAS
+// ============================================
+app.post('/api/docente/incidencias', authMiddleware, async (req, res) => {
+    try {
+        const {
+            docente_cedula, estudiante_id, estudiante_nombre, grado, seccion, fecha,
+            situaciones, otra_situacion, descripcion, antecedentes, acciones_tomadas,
+            otra_accion, compromisos_estudiante, compromisos_representante, estado
+        } = req.body;
+
+        await pool.execute(
+            `INSERT INTO incidencias 
+            (docente_cedula, estudiante_id, estudiante_nombre, grado, seccion, fecha, situaciones, otra_situacion, descripcion, antecedentes, acciones_tomadas, otra_accion, compromisos_estudiante, compromisos_representante, estado)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [docente_cedula, estudiante_id, estudiante_nombre, grado, seccion, fecha, situaciones, otra_situacion, descripcion, antecedentes, acciones_tomadas, otra_accion, compromisos_estudiante, compromisos_representante, estado || 'borrador']
+        );
+
+        res.json({ success: true, msg: 'Incidencia guardada correctamente' });
+    } catch (error) {
+        console.error('Error al guardar incidencia:', error);
+        res.status(500).json({ error: 'Error al guardar incidencia' });
+    }
+});
+// ============================================
+// PLANIFICACIONES
+// ============================================
+app.post('/api/docente/planificaciones', authMiddleware, async (req, res) => {
+    const conn = await pool.getConnection();
+    try {
+        const { docente_cedula, materia, grado, secciones, momento, peic, tema_indispensable, tema_generador, estado, contenidos, evaluaciones } = req.body;
+        
+        await conn.beginTransaction();
+
+        const [planRes] = await conn.execute(
+            `INSERT INTO planificaciones (docente_cedula, materia, grado, secciones, momento, peic, tema_indispensable, tema_generador, estado)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [docente_cedula, materia, grado, secciones, momento, peic, tema_indispensable, tema_generador, estado]
+        );
+        const planId = planRes.insertId;
+
+        for (let i = 0; i < contenidos.length; i++) {
+            const c = contenidos[i];
+            await conn.execute(
+                `INSERT INTO planificaciones_contenidos (planificacion_id, orden, tejido_tematico, conceptualizacion, referentes_teoricos, competencias, estrategias_metodologicas, recursos)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [planId, i + 1, c.tejido, c.conceptualizacion, c.referentes, c.competencias, c.estrategias, c.recursos]
+            );
+        }
+
+        for (let i = 0; i < evaluaciones.length; i++) {
+            const ev = evaluaciones[i];
+            await conn.execute(
+                `INSERT INTO planificaciones_evaluaciones (planificacion_id, orden, estrategia, instrumento, prueba, criterios)
+                 VALUES (?, ?, ?, ?, ?, ?)`,
+                [planId, i + 1, ev.estrategia, ev.instrumento, ev.prueba, ev.criterios]
+            );
+        }
+
+        await conn.commit();
+        res.json({ success: true, planId });
+    } catch (error) {
+        await conn.rollback();
+        console.error('Error al guardar planificación:', error);
+        res.status(500).json({ error: 'Error al guardar planificación' });
+    } finally {
+        conn.release();
+    }
+});
+// ============================================
+// RUTAS PROTEGIDAS (requieren token)
+// ============================================
+
+// Obtener calificaciones cargadas
+app.get('/api/calificaciones', authMiddleware, async (req, res) => {
+    try {
+        const [calificaciones] = await pool.execute(
+            `SELECT 
+                e.cedula,
+                CONCAT(e.apellidos, ', ', e.nombres) as estudiante,
+                g.nombre as grado,
+                s.nombre as seccion,
+                a.nombre as asignatura,
+                c.lapso,
+                c.nota_1,
+                c.nota_2,
+                c.nota_3,
+                c.definitiva
+             FROM calificaciones c
+             JOIN estudiantes e ON c.estudiante_id = e.id
+             JOIN asignaturas a ON c.asignatura_id = a.id
+             JOIN grados g ON a.grado_id = g.id
+             JOIN secciones s ON e.seccion_id = s.id
+             ORDER BY e.apellidos, a.nombre`
+        );
+        
+        res.json(calificaciones);
+    } catch (error) {
+        res.status(500).json({ error: 'Error al obtener calificaciones' });
+    }
+});
+
+// Obtener estudiantes por grado/sección (para docentes) - CORREGIDO
+app.get('/api/estudiantes/:grado/:seccion', authMiddleware, async (req, res) => {
+    const { grado, seccion } = req.params;
+    
+    try {
+        const [estudiantes] = await pool.execute(
+            `SELECT 
+                e.id,
+                e.cedula,
+                e.nombres,
+                e.apellidos,
+                e.sexo,
+                g.nombre as grado,
+                s.nombre as seccion
+             FROM estudiantes e
+             JOIN inscripciones i ON e.id = i.estudiante_id
+             JOIN secciones s ON i.seccion_id = s.id
+             JOIN grados g ON s.grado_id = g.id
+             WHERE g.id = ? AND s.nombre = ? AND e.estado = 'activo' AND i.periodo_id = 2
+             ORDER BY e.apellidos`,
+            [grado, seccion]
+        );
+        
+        res.json(estudiantes);
+    } catch (error) {
+        console.error('Error al obtener estudiantes:', error);
+        res.status(500).json({ error: 'Error al obtener estudiantes' });
+    }
+});
+
+// Iniciar servidor
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0',() => {
+    console.log(`🚀 Servidor API corriendo en http://localhost:${PORT}`);
+    console.log(`📚 Endpoints disponibles:`);
+    console.log(`   POST /api/login/cedula`);
+    console.log(`   POST /api/login/contrasena`);
+    console.log(`   POST /api/login/rol`);
+    console.log(`   GET  /api/calificaciones (requiere token)`);
+});
+

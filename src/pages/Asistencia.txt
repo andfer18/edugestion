@@ -1,0 +1,126 @@
+import { useState } from 'react';
+import { UserCheck, XCircle, Clock, Users, Download } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { estudiantes, asistencia } from '@/data/index';
+import { GRADOS_SECUNDARIA, SECCIONES } from '@/lib/index';
+
+type EA = 'presente'|'ausente'|'justificado'|'tardanza';
+const ESTADOS: EA[] = ['presente','ausente','justificado','tardanza'];
+const ESTADO_MAP: Record<EA,{label:string;cls:string}> = {
+  presente:   { label:'Presente',   cls:'siga-badge-green'  },
+  ausente:    { label:'Ausente',    cls:'siga-badge-red'    },
+  justificado:{ label:'Justificado',cls:'siga-badge-blue'   },
+  tardanza:   { label:'Tardanza',   cls:'siga-badge-orange' },
+};
+
+export default function Asistencia() {
+  const [grado,setGrado]   = useState('1er Año');
+  const [sec,setSec]       = useState('A');
+  const [fecha,setFecha]   = useState(new Date().toISOString().split('T')[0]);
+  const [saved,setSaved]   = useState(false);
+
+  const estus = estudiantes.filter(e=>e.grado===grado&&e.seccion===sec&&e.estado==='activo');
+  const [reg,setReg] = useState<Record<string,EA>>(()=>{
+    const r: Record<string,EA>={};
+    estus.forEach(e=>{const ex=asistencia.find(a=>a.estudianteId===e.id&&a.fecha===fecha);r[e.id]=ex?.estado??'presente';});
+    return r;
+  });
+
+  const setE=(id:string,e:EA)=>setReg(p=>({...p,[id]:e}));
+  const marcarTodos=(e:EA)=>{const r:Record<string,EA>={};estus.forEach(s=>{r[s.id]=e;});setReg(r);};
+
+  const presentes = Object.values(reg).filter(e=>e==='presente').length;
+  const ausentes  = Object.values(reg).filter(e=>e==='ausente').length;
+  const tardanzas = Object.values(reg).filter(e=>e==='tardanza').length;
+  const pct = estus.length>0 ? Math.round((presentes/estus.length)*100) : 0;
+
+  return (
+    <div className="min-h-screen bg-slate-100 p-6 max-w-[1200px]">
+      <div className="bg-white rounded-[2.5rem] px-8 py-7 mb-8 shadow-sm border-b-8 border-primary flex flex-col md:flex-row justify-between items-start md:items-center gap-5">
+        <div>
+          <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tighter italic leading-none">Control de Asistencia</h1>
+          <p className="text-[9px] font-bold text-blue-700 uppercase tracking-[0.2em] mt-2">Registro diario por sección</p>
+        </div>
+        <div className="flex items-center gap-3">
+          {saved && <span className="siga-badge-green flex items-center gap-1"><UserCheck className="w-3 h-3" />Guardado</span>}
+          <button onClick={()=>{setSaved(true);setTimeout(()=>setSaved(false),2500);}} className="siga-btn-primary flex items-center gap-2">
+            <UserCheck className="w-4 h-4" />Guardar Asistencia
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-7">
+        {[{l:'Presentes',v:presentes,c:'border-emerald-500'},{l:'Ausentes',v:ausentes,c:'border-red-500'},{l:'Tardanzas',v:tardanzas,c:'border-orange-500'},{l:'% Asistencia',v:`${pct}%`,c:'border-primary'}].map((k,i)=>(
+          <motion.div key={k.l} initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay:i*0.06}}
+            className={`bg-white rounded-[2rem] p-7 shadow-sm border-l-8 ${k.c}`}>
+            <p className="siga-label mb-2">{k.l}</p>
+            <span className="siga-kpi">{k.v}</span>
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-200 mb-6">
+        <div className="flex flex-wrap gap-4 items-end">
+          <div><p className="siga-label mb-2">Fecha</p>
+            <input type="date" value={fecha} onChange={e=>setFecha(e.target.value)}
+              className="h-11 px-4 rounded-2xl border-2 border-slate-200 bg-slate-50 font-black text-sm text-slate-700 outline-none focus:border-primary transition" />
+          </div>
+          <div><p className="siga-label mb-2">Grado</p>
+            <Select value={grado} onValueChange={setGrado}>
+              <SelectTrigger className="w-36 rounded-2xl border-2 border-slate-200 font-black text-xs uppercase"><SelectValue /></SelectTrigger>
+              <SelectContent>{GRADOS_SECUNDARIA.map(g=><SelectItem key={g} value={g}>{g}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
+          <div><p className="siga-label mb-2">Sección</p>
+            <Select value={sec} onValueChange={setSec}>
+              <SelectTrigger className="w-24 rounded-2xl border-2 border-slate-200 font-black text-xs uppercase"><SelectValue /></SelectTrigger>
+              <SelectContent>{SECCIONES.map(s=><SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
+          <div className="flex gap-2 ml-auto">
+            <button onClick={()=>marcarTodos('presente')} className="px-5 py-2.5 rounded-2xl bg-emerald-50 border-2 border-emerald-200 text-emerald-700 font-black text-[9px] uppercase tracking-widest hover:bg-emerald-100 transition">Todos Presentes</button>
+            <button onClick={()=>marcarTodos('ausente')}  className="px-5 py-2.5 rounded-2xl bg-red-50 border-2 border-red-200 text-red-600 font-black text-[9px] uppercase tracking-widest hover:bg-red-100 transition">Todos Ausentes</button>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-[2.5rem] shadow-sm overflow-hidden border border-slate-200">
+        <div className="px-8 py-5 bg-slate-50 border-b">
+          <h3 className="font-black text-slate-900 uppercase tracking-tighter italic">{grado} "Sección {sec}" — {fecha}</h3>
+        </div>
+        <table className="w-full text-left">
+          <thead className="bg-slate-50 border-b">
+            <tr>{['#','Estudiante','Cédula','Estado de Asistencia'].map(h=><th key={h} className="px-8 py-4 siga-label">{h}</th>)}</tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {estus.length===0 ? (
+              <tr><td colSpan={4} className="px-8 py-10 text-center font-black text-slate-300 uppercase text-xs">Sin estudiantes en {grado} "{sec}"</td></tr>
+            ) : estus.map((e,i)=>(
+              <tr key={e.id} className="hover:bg-blue-50/10 transition-colors">
+                <td className="px-8 py-4 font-black text-slate-300 text-xs font-mono">{i+1}</td>
+                <td className="px-8 py-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-2xl bg-slate-100 flex items-center justify-center font-black text-slate-500 text-[10px]">{e.nombre[0]}{e.apellido[0]}</div>
+                    <p className="font-black text-slate-800 uppercase text-xs">{e.apellido}, {e.nombre}</p>
+                  </div>
+                </td>
+                <td className="px-8 py-4 font-mono font-black text-slate-500 text-xs">V-{e.cedula}</td>
+                <td className="px-8 py-4">
+                  <div className="flex flex-wrap gap-1.5">
+                    {ESTADOS.map(s=>(
+                      <button key={s} onClick={()=>setE(e.id,s)}
+                        className={`px-3 py-1.5 rounded-2xl text-[9px] font-black uppercase border-2 transition ${
+                          reg[e.id]===s ? ESTADO_MAP[s].cls : 'border-slate-200 text-slate-400 hover:border-slate-400'
+                        }`}>{ESTADO_MAP[s].label}</button>
+                    ))}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}

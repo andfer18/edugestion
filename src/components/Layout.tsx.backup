@@ -1,0 +1,267 @@
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  LayoutDashboard, Users, GraduationCap, ClipboardList, BookOpen,
+  FileText, BarChart3, Calendar, Settings, LogOut, Bell, Menu,
+  School, FileCheck, UserCheck, ClipboardCheck, AlertCircle,
+  ChevronDown, Activity, Database,
+} from 'lucide-react';
+import { ROUTE_PATHS, ROL_LABELS } from '@/lib/index';
+import type { Usuario, Rol } from '@/lib/index';
+import { useState } from 'react';
+
+interface NavItem {
+  label: string;
+  path: string;
+  icon: React.ElementType;
+  roles: Rol[];
+  badge?: string;
+  section?: string;
+}
+
+const navItems: NavItem[] = [
+  { label: 'Panel Principal',    path: ROUTE_PATHS.DASHBOARD,         icon: LayoutDashboard, roles: ['administrador','ctrl_estudios','secretaria','coord_pedagogico','docente'] },
+  
+  // CONFIGURACIÓN (Administrador / Control de Estudios)
+  { label: 'Datos del Plantel',  path: ROUTE_PATHS.PLANTEL_DATOS,     icon: School,          roles: ['administrador','ctrl_estudios'],                                          section: 'Configuración' },
+  { label: 'Periodo Escolar',    path: ROUTE_PATHS.PERIODO_ESCOLAR,   icon: Calendar,        roles: ['administrador','ctrl_estudios'] },
+  { label: 'Planes de Estudio',  path: ROUTE_PATHS.PLANES_ESTUDIO,    icon: BookOpen,        roles: ['administrador','ctrl_estudios'] },
+  { label: 'Grados y Secciones', path: ROUTE_PATHS.GRADOS_SECCIONES,  icon: GraduationCap,   roles: ['administrador','ctrl_estudios'] },
+  { label: 'Nómina Personal',    path: ROUTE_PATHS.NOMINA_PERSONAL,   icon: Users,           roles: ['administrador','ctrl_estudios'] },
+  
+  // SISTEMA (Administrador)
+  { label: 'Usuarios y Perfiles',path: ROUTE_PATHS.USUARIOS,          icon: Users,           roles: ['administrador'],                                                         section: 'Sistema' },
+  { label: 'n8n Automatización', path: ROUTE_PATHS.AUTO_CONFIG,       icon: Settings,        roles: ['administrador'] },
+  { label: 'Logs del Sistema',   path: '#',                          icon: Activity,        roles: ['administrador'] },
+  { label: 'Backups',            path: '#',                          icon: Database,        roles: ['administrador'] },
+
+  // REGISTRO Y CONTROL (Secretaría / Ctrl Estudios)
+  { label: 'Inscripciones',      path: ROUTE_PATHS.PRE_INSCRIPCIONES, icon: ClipboardList,   roles: ['secretaria','ctrl_estudios'],                                           badge: '24', section: 'Registro' },
+  { label: 'Cédula Escolar',     path: ROUTE_PATHS.CE_ID_CARDS,       icon: FileCheck,       roles: ['secretaria','ctrl_estudios'] },
+  { label: 'Retiros',            path: ROUTE_PATHS.RETIROS,           icon: LogOut,          roles: ['secretaria','ctrl_estudios'] },
+  
+  // ACADÉMICO (Docentes / Coordinación)
+  { label: 'Carga de Notas',     path: ROUTE_PATHS.NOTAS_CARGA,       icon: BookOpen,        roles: ['docente','coord_pedagogico'],                                            section: 'Académico' },
+  { label: 'Asistencia',         path: ROUTE_PATHS.ASISTENCIA,        icon: UserCheck,       roles: ['docente','coord_pedagogico'] },
+  { label: 'Validar Notas',      path: ROUTE_PATHS.VALIDAR_LOTES,     icon: ClipboardCheck,  roles: ['coord_pedagogico','ctrl_estudios'] },
+  { label: 'Riesgo Académico',   path: ROUTE_PATHS.RIESGO_ACADEMICO,  icon: AlertCircle,     roles: ['coord_pedagogico'] },
+  
+  // REPORTES
+  { label: 'Boletines',          path: ROUTE_PATHS.BOLETINES,         icon: FileCheck,       roles: ['secretaria','ctrl_estudios','coord_pedagogico'],                        section: 'Reportes' },
+  { label: 'Cuadro de Honor',    path: ROUTE_PATHS.CUADRO_HONOR,      icon: BarChart3,       roles: ['coord_pedagogico'] },
+  { label: 'Reportes MPPE',      path: ROUTE_PATHS.REPORTES_MINISTERIO, icon: FileText,      roles: ['ctrl_estudios'] },
+  { label: 'Finanzas (CxC)',     path: ROUTE_PATHS.CXC_REPORTES,      icon: BarChart3,       roles: ['coord_pedagogico'] },
+];
+
+const ROL_ACCENT: Record<Rol, string> = {
+  administrador:    'border-purple-500',
+  ctrl_estudios:    'border-blue-500',
+  secretaria:       'border-orange-500',
+  coord_pedagogico: 'border-emerald-500',
+  docente:          'border-slate-400',
+};
+
+interface LayoutProps { user: Usuario; onLogout: () => void; children: React.ReactNode; }
+
+export function Layout({ user, onLogout, children }: LayoutProps) {
+  const location  = useLocation();
+  const navigate  = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [showUser, setShowUser] = useState(false);
+
+  const items    = navItems.filter(i => i.roles.includes(user.rol));
+  const current  = items.find(i => i.path === location.pathname);
+  const initials = `${user.nombre[0]}${user.apellido[0]}`;
+
+  const handleLogout = () => { onLogout(); navigate(ROUTE_PATHS.LOGIN); };
+
+  const isSigaDashboard = user.rol === 'ctrl_estudios' && location.pathname === ROUTE_PATHS.DASHBOARD;
+
+  /* ── Sidebar content (reutilizado en desktop + mobile) ── */
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full bg-slate-900">
+
+      {/* Logo */}
+      <div className="px-6 py-6 border-b border-slate-800">
+        <div className="flex items-center gap-3 mb-5">
+          <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center shadow-lg p-1.5">
+            <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
+          </div>
+          <div>
+            <p className="font-black text-white text-sm uppercase tracking-tight leading-none">EduGestión</p>
+            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em] mt-0.5">Sistema Escolar</p>
+          </div>
+        </div>
+        {/* Año escolar pill */}
+        <div className="px-3 py-2 rounded-2xl bg-slate-800 border border-slate-700">
+          <p className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-500">Año Escolar Activo</p>
+          <p className="font-black text-white text-sm mt-0.5">2024 — 2025</p>
+        </div>
+      </div>
+
+      {/* Nav */}
+      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
+        {items.map((item, idx) => {
+          const Icon    = item.icon;
+          const active  = location.pathname === item.path;
+          const prev    = items[idx - 1];
+          const showSec = item.section && (!prev || prev.section !== item.section);
+          return (
+            <div key={item.path}>
+              {showSec && (
+                <p className="px-3 pt-5 pb-1.5 text-[8px] font-black uppercase tracking-[0.25em] text-slate-600">
+                  {item.section}
+                </p>
+              )}
+              <Link
+                to={item.path}
+                onClick={() => setOpen(false)}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-wide transition-all duration-150 ${
+                  active
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40'
+                    : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                }`}
+              >
+                <Icon className={`w-4 h-4 flex-shrink-0 ${active ? 'text-white' : 'text-slate-500'}`} />
+                <span className="flex-1 truncate">{item.label}</span>
+                {item.badge && (
+                  <span className="bg-red-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded-lg shadow-lg">
+                    {item.badge}
+                  </span>
+                )}
+              </Link>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* User footer */}
+      <div className="px-4 py-4 border-t border-slate-800">
+        <button
+          onClick={() => setShowUser(v => !v)}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl hover:bg-slate-800 transition-colors"
+        >
+          <div className={`w-9 h-9 rounded-2xl bg-slate-800 border-2 ${ROL_ACCENT[user.rol]} flex items-center justify-center`}>
+            <span className="font-black text-white text-xs">{initials}</span>
+          </div>
+          <div className="flex-1 text-left min-w-0">
+            <p className="font-black text-white text-[11px] uppercase truncate">{user.apellido}</p>
+            <p className="text-[8px] text-slate-500 font-bold uppercase tracking-widest">{ROL_LABELS[user.rol]}</p>
+          </div>
+          <ChevronDown className={`w-3.5 h-3.5 text-slate-500 transition-transform ${showUser ? 'rotate-180' : ''}`} />
+        </button>
+
+        <AnimatePresence>
+          {showUser && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="pt-2 space-y-1">
+                <p className="px-3 py-1 text-[9px] font-bold text-slate-500 uppercase tracking-widest">V-{user.cedula}</p>
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-2xl text-red-400 hover:bg-red-900/30 hover:text-red-300 transition-colors text-[10px] font-black uppercase tracking-wide"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  Cerrar Sesión
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex h-screen bg-background overflow-hidden">
+
+      {/* Desktop sidebar */}
+      {!isSigaDashboard && (
+        <aside className="hidden lg:flex w-64 flex-shrink-0 flex-col border-r border-slate-800">
+          <SidebarContent />
+        </aside>
+      )}
+
+      {/* Mobile overlay */}
+      <AnimatePresence>
+        {open && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-slate-900/80 z-40 lg:hidden"
+              onClick={() => setOpen(false)}
+            />
+            <motion.aside
+              initial={{ x: -288 }} animate={{ x: 0 }} exit={{ x: -288 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="fixed left-0 top-0 bottom-0 w-72 z-50 lg:hidden"
+            >
+              <SidebarContent />
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Main */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+
+        {/* Top bar — estilo SIGA */}
+        {!isSigaDashboard && (
+          <header className="h-14 bg-white border-b-4 border-primary flex items-center px-5 gap-4 flex-shrink-0 shadow-sm">
+            <button
+              onClick={() => setOpen(true)}
+              className="lg:hidden w-9 h-9 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition"
+            >
+              <Menu className="w-4 h-4" />
+            </button>
+
+            <div className="flex-1 min-w-0">
+              <h2 className="font-black text-sm text-slate-900 uppercase tracking-tight leading-none truncate">
+                {current?.label ?? 'Panel Principal'}
+              </h2>
+              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-0.5 hidden sm:block">
+                U.E. Ejemplo — Año Escolar 2024-2025
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {/* Bell */}
+              <button className="relative w-9 h-9 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 transition">
+                <Bell className="w-4 h-4" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-600 rounded-full" />
+              </button>
+
+              {/* User chip — sólo desktop */}
+              <div className="hidden sm:flex items-center gap-2 pl-3 border-l border-slate-200">
+                <div className={`w-8 h-8 rounded-2xl bg-slate-900 border-2 ${ROL_ACCENT[user.rol]} flex items-center justify-center`}>
+                  <span className="font-black text-white text-[10px]">{initials}</span>
+                </div>
+                <div className="hidden md:block">
+                  <p className="font-black text-slate-800 text-[10px] uppercase tracking-tight leading-none">{user.nombre}</p>
+                  <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest">{ROL_LABELS[user.rol]}</p>
+                </div>
+              </div>
+            </div>
+          </header>
+        )}
+
+        {/* Content */}
+        <main className="flex-1 overflow-auto">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.18 }}
+            className="h-full"
+          >
+            {children}
+          </motion.div>
+        </main>
+      </div>
+    </div>
+  );
+}

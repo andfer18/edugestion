@@ -1,0 +1,346 @@
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { 
+  ArrowLeft, Save, Send, User, Calendar as CalendarIcon, 
+  FileText, AlertTriangle, CheckSquare, Clipboard, History,
+  MessageSquare, Users, ShieldCheck, Signature
+} from 'lucide-react';
+import { SECCIONES, GRADOS_SECUNDARIA } from '@/lib/index';
+
+export default function ReporteIncidencias() {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  // Estados del Formulario
+  const [formData, setFormData] = useState({
+    numeroIncidencia: '2026-001',
+    estudiante: '',
+    año: '',
+    seccion: '',
+    fecha: new Date().toISOString().split('T')[0],
+    diaSemana: new Date().toLocaleDateString('es-ES', { weekday: 'long' }),
+    situaciones: [] as string[],
+    otraSituacion: '',
+    descripcion: '',
+    antecedentes: [] as string[],
+    accionesTomadas: [] as string[],
+    otraAccion: '',
+    compromisosEstudiante: '',
+    compromisosRepresentante: ''
+  });
+
+  const situacionesOptions = [
+    'Agresión verbal', 'Agresión física', 'No participación', 'Daño material',
+    'Desacato al docente', 'Incumplimiento de material', 'Incumplimiento de trabajo en clase',
+    'Participó en una pelea', 'Tiene una constante conducta agresiva',
+    'Incumplimiento de tareas', 'Conducta peligrosa durante el receso',
+    'Usó un lenguaje obsceno', 'Otros'
+  ];
+
+  const antecedentesOptions = [
+    'Llamada de atención verbal', 'Reincidió de 1 a 2 veces',
+    'La titular dialogó con el niño (a)', 'Compromisos no cumplidos'
+  ];
+
+  const accionesOptions = [
+    'Diálogo con el estudiante', 'Estuvo un tiempo en la dirección de la escuela',
+    'Se llamó a los padres de familia', 'Otras'
+  ];
+
+  const handleCheckboxChange = (field: 'situaciones' | 'antecedentes' | 'accionesTomadas', value: string) => {
+    setFormData(prev => {
+      const current = prev[field];
+      if (current.includes(value)) {
+        return { ...prev, [field]: current.filter(item => item !== value) };
+      }
+      return { ...prev, [field]: [...current, value] };
+    });
+  };
+
+  const handleSave = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    }, 1500);
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 p-4 md:p-8 max-w-[1200px] mx-auto pb-24 font-sans">
+      {/* Header */}
+      <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 mb-8 shadow-sm border-b-[8px] md:border-b-[12px] border-amber-500 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+        <div className="flex items-center gap-4 md:gap-6 w-full lg:w-auto">
+          <button onClick={() => navigate(-1)} className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-slate-900 hover:text-white transition-all shrink-0">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div className="min-w-0">
+            <h1 className="text-xl md:text-3xl font-black text-slate-900 uppercase tracking-tighter italic leading-none truncate">Reporte de Incidencias</h1>
+            <p className="text-[9px] font-bold text-amber-700 uppercase tracking-[0.2em] mt-2 md:mt-3 truncate">Formato Oficial • Control de Disciplina</p>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+          <button 
+            onClick={handleSave}
+            disabled={loading}
+            className="w-full sm:w-auto px-6 py-4 bg-slate-900 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 hover:bg-slate-800 transition-all shadow-lg active:scale-95 disabled:opacity-50"
+          >
+            <Save className="w-4 h-4" /> {loading ? 'Procesando...' : 'Guardar Reporte'}
+          </button>
+          <button 
+            className="w-full sm:w-auto px-6 py-4 bg-amber-500 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 hover:bg-amber-600 transition-all shadow-lg shadow-amber-200 active:scale-95"
+          >
+            <Send className="w-4 h-4" /> Enviar a Dirección
+          </button>
+        </div>
+      </div>
+
+      {saved && (
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="bg-emerald-50 border-2 border-emerald-100 rounded-2xl p-4 mb-8 flex items-center gap-3 shadow-sm">
+          <div className="w-8 h-8 bg-emerald-500 rounded-xl flex items-center justify-center text-white">
+            <ShieldCheck className="w-5 h-5" />
+          </div>
+          <p className="text-xs font-black text-emerald-800 uppercase italic">¡Reporte guardado exitosamente en el historial del estudiante!</p>
+        </motion.div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Columna Izquierda: Datos Generales */}
+        <div className="lg:col-span-2 space-y-8">
+          
+          {/* Información del Estudiante */}
+          <div className="bg-white rounded-[2.5rem] p-6 md:p-8 shadow-sm border border-slate-200">
+            <h3 className="text-sm font-black text-slate-900 uppercase italic tracking-tighter flex items-center gap-3 mb-6">
+              <User className="w-5 h-5 text-amber-500" /> Datos del Estudiante
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-slate-400 ml-4 tracking-widest">Estudiante</label>
+                <div className="relative">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                  <input 
+                    type="text"
+                    placeholder="Buscar estudiante..."
+                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-transparent focus:border-amber-500 focus:bg-white rounded-2xl text-xs font-bold outline-none transition-all"
+                    value={formData.estudiante}
+                    onChange={(e) => setFormData({...formData, estudiante: e.target.value})}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-slate-400 ml-4 tracking-widest">Año</label>
+                  <select 
+                    className="w-full px-4 py-4 bg-slate-50 border-2 border-transparent focus:border-amber-500 focus:bg-white rounded-2xl text-xs font-bold outline-none transition-all appearance-none"
+                    value={formData.año}
+                    onChange={(e) => setFormData({...formData, año: e.target.value})}
+                  >
+                    <option value="">Seleccionar</option>
+                    {GRADOS_SECUNDARIA.map(g => <option key={g} value={g}>{g}</option>)}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-slate-400 ml-4 tracking-widest">Sección</label>
+                  <select 
+                    className="w-full px-4 py-4 bg-slate-50 border-2 border-transparent focus:border-amber-500 focus:bg-white rounded-2xl text-xs font-bold outline-none transition-all appearance-none"
+                    value={formData.seccion}
+                    onChange={(e) => setFormData({...formData, seccion: e.target.value})}
+                  >
+                    <option value="">Seleccionar</option>
+                    {SECCIONES.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Situación y Descripción */}
+          <div className="bg-white rounded-[2.5rem] p-6 md:p-8 shadow-sm border border-slate-200">
+            <h3 className="text-sm font-black text-slate-900 uppercase italic tracking-tighter flex items-center gap-3 mb-6">
+              <AlertTriangle className="w-5 h-5 text-red-500" /> Descripción de la Incidencia
+            </h3>
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {situacionesOptions.map(opt => (
+                  <button
+                    key={opt}
+                    onClick={() => handleCheckboxChange('situaciones', opt)}
+                    className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-all text-left ${
+                      formData.situaciones.includes(opt) 
+                        ? 'bg-amber-50 border-amber-500 text-amber-700 shadow-md' 
+                        : 'bg-slate-50 border-transparent text-slate-600 hover:bg-slate-100'
+                    }`}
+                  >
+                    <div className={`w-5 h-5 rounded-lg flex items-center justify-center shrink-0 ${
+                      formData.situaciones.includes(opt) ? 'bg-amber-500 text-white' : 'bg-slate-200 text-slate-400'
+                    }`}>
+                      {formData.situaciones.includes(opt) && <CheckSquare className="w-4 h-4" />}
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-tighter leading-none">{opt}</span>
+                  </button>
+                ))}
+              </div>
+
+              {formData.situaciones.includes('Otros') && (
+                <input 
+                  type="text"
+                  placeholder="Especifique otra situación..."
+                  className="w-full px-6 py-4 bg-slate-50 border-2 border-amber-500 rounded-2xl text-xs font-bold outline-none transition-all"
+                  value={formData.otraSituacion}
+                  onChange={(e) => setFormData({...formData, otraSituacion: e.target.value})}
+                />
+              )}
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-slate-400 ml-4 tracking-widest">Breve descripción de la incidencia</label>
+                <textarea 
+                  rows={6}
+                  className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-amber-500 focus:bg-white rounded-3xl text-xs font-bold outline-none transition-all resize-none"
+                  placeholder="Detalle lo sucedido de forma objetiva..."
+                  value={formData.descripcion}
+                  onChange={(e) => setFormData({...formData, descripcion: e.target.value})}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Compromisos */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-slate-200">
+              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-4">
+                <MessageSquare className="w-4 h-4 text-blue-500" /> Compromisos del Estudiante
+              </h3>
+              <textarea 
+                rows={4}
+                className="w-full px-4 py-4 bg-slate-50 border-2 border-transparent focus:border-blue-500 focus:bg-white rounded-2xl text-xs font-bold outline-none transition-all resize-none"
+                placeholder="Escriba los acuerdos alcanzados..."
+                value={formData.compromisosEstudiante}
+                onChange={(e) => setFormData({...formData, compromisosEstudiante: e.target.value})}
+              />
+            </div>
+            <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-slate-200">
+              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-4">
+                <Users className="w-4 h-4 text-purple-500" /> Compromisos del Representante
+              </h3>
+              <textarea 
+                rows={4}
+                className="w-full px-4 py-4 bg-slate-50 border-2 border-transparent focus:border-purple-500 focus:bg-white rounded-2xl text-xs font-bold outline-none transition-all resize-none"
+                placeholder="Escriba los acuerdos del representante..."
+                value={formData.compromisosRepresentante}
+                onChange={(e) => setFormData({...formData, compromisosRepresentante: e.target.value})}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Columna Derecha: Metadatos y Acciones */}
+        <div className="space-y-8">
+          {/* Fecha e Incidencia */}
+          <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full -mr-16 -mt-16 blur-3xl" />
+            <div className="relative z-10 space-y-6">
+              <div>
+                <p className="text-[8px] font-black text-amber-400 uppercase tracking-widest mb-1">Nro. de Incidencia</p>
+                <h2 className="text-3xl font-black italic tracking-tighter">{formData.numeroIncidencia}</h2>
+              </div>
+              <div className="space-y-4 pt-4 border-t border-white/10">
+                <div className="flex items-center gap-3">
+                  <CalendarIcon className="w-5 h-5 text-blue-400" />
+                  <div>
+                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Fecha del Suceso</p>
+                    <input 
+                      type="date"
+                      className="bg-transparent border-none text-xs font-bold text-white outline-none w-full"
+                      value={formData.fecha}
+                      onChange={(e) => setFormData({...formData, fecha: e.target.value})}
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Clipboard className="w-5 h-5 text-purple-400" />
+                  <div>
+                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Día de la Semana</p>
+                    <p className="text-xs font-bold text-white uppercase">{formData.diaSemana}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Antecedentes */}
+          <div className="bg-white rounded-[2.5rem] p-6 md:p-8 shadow-sm border border-slate-200">
+            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-6">
+              <History className="w-4 h-4 text-slate-600" /> Antecedentes
+            </h3>
+            <div className="space-y-3">
+              {antecedentesOptions.map(opt => (
+                <button
+                  key={opt}
+                  onClick={() => handleCheckboxChange('antecedentes', opt)}
+                  className={`w-full flex items-center gap-3 p-4 rounded-2xl border-2 transition-all text-left ${
+                    formData.antecedentes.includes(opt) 
+                      ? 'bg-slate-900 border-slate-900 text-white shadow-lg' 
+                      : 'bg-slate-50 border-transparent text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  <div className={`w-4 h-4 rounded-full border-2 shrink-0 ${
+                    formData.antecedentes.includes(opt) ? 'border-amber-400 bg-amber-400' : 'border-slate-300'
+                  }`} />
+                  <span className="text-[10px] font-black uppercase tracking-tighter leading-tight">{opt}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Acciones Tomadas */}
+          <div className="bg-white rounded-[2.5rem] p-6 md:p-8 shadow-sm border border-slate-200">
+            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-6">
+              <ShieldCheck className="w-4 h-4 text-emerald-500" /> Acciones Tomadas
+            </h3>
+            <div className="space-y-3">
+              {accionesOptions.map(opt => (
+                <button
+                  key={opt}
+                  onClick={() => handleCheckboxChange('accionesTomadas', opt)}
+                  className={`w-full flex items-center gap-3 p-4 rounded-2xl border-2 transition-all text-left ${
+                    formData.accionesTomadas.includes(opt) 
+                      ? 'bg-emerald-50 border-emerald-500 text-emerald-700' 
+                      : 'bg-slate-50 border-transparent text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  <div className={`w-5 h-5 rounded-lg flex items-center justify-center shrink-0 ${
+                    formData.accionesTomadas.includes(opt) ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-400'
+                  }`}>
+                    {formData.accionesTomadas.includes(opt) && <CheckSquare className="w-4 h-4" />}
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-tighter leading-tight">{opt}</span>
+                </button>
+              ))}
+              {formData.accionesTomadas.includes('Otras') && (
+                <input 
+                  type="text"
+                  placeholder="Especifique..."
+                  className="w-full px-4 py-3 bg-slate-50 border-2 border-emerald-500 rounded-xl text-[10px] font-bold outline-none transition-all"
+                  value={formData.otraAccion}
+                  onChange={(e) => setFormData({...formData, otraAccion: e.target.value})}
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Área de Firmas (Informativo) */}
+          <div className="bg-slate-50 rounded-[2rem] p-6 border-2 border-dashed border-slate-200">
+            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-4">
+              <Signature className="w-4 h-4" /> Control de Firmas
+            </h3>
+            <p className="text-[9px] font-bold text-slate-500 uppercase leading-relaxed italic">
+              Al guardar, se generará una versión digital para la firma biométrica o física del representante y el directivo de guardia.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

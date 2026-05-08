@@ -1,0 +1,127 @@
+import React, { useState } from 'react';
+import { generateExcel31059 } from '../utils/generateExcel31059';
+
+const GRADOS_MAP: { [key: string]: string } = {
+  '16': '1er Año', '17': '2do Año', '18': '3er Año', '19': '4to Año', '20': '5to Año'
+};
+
+// Mapa para el nombre de los archivos Excel
+const GRADO_FILE_MAP: { [key: string]: string } = {
+  '16': '1ro', '17': '2do', '18': '3ro', '19': '4to', '20': '5to'
+};
+
+export default function ResumenFinal31059() {
+  const [gradoId, setGradoId] = useState('');
+  const [seccion, setSeccion] = useState('');
+  const [estudiantes, setEstudiantes] = useState<any[]>([]);
+  const [definitivas, setDefinitivas] = useState<{ [id: string]: any }>({});
+  const [materias, setMaterias] = useState<string[]>([]);
+  const [docentes, setDocentes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Campos adicionales para la planilla
+  const [directorNombre, setDirectorNombre] = useState('');
+  const [directorCI, setDirectorCI] = useState('');
+  const [mppeNombre, setMppeNombre] = useState('');
+  const [mppeCI, setMppeCI] = useState('');
+  const [observaciones, setObservaciones] = useState('');
+
+  const token = localStorage.getItem('siga_token');
+
+  const buscar = async () => {
+    if (!gradoId || !seccion) return alert('Seleccione Grado y Sección');
+    setLoading(true);
+    try {
+      const res = await fetch(`http://localhost:3000/api/ctrl-estudios/planilla-31059?grado_id=${gradoId}&seccion=${seccion}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      
+      setEstudiantes(data.estudiantes || []);
+      setDefinitivas(data.definitivas || {});
+      setMaterias(data.materias || []);
+      setDocentes(data.docentes || []);
+      
+      if (data.estudiantes.length === 0) alert('No se encontraron estudiantes activos.');
+    } catch (err) {
+      alert('Error al consultar la API');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const exportarTipo = async (tipo: 'CI' | 'CE') => {
+    if (estudiantes.length === 0) return alert('No hay datos para exportar');
+    
+    const datosPlanilla = {
+      estudiantes, definitivas, docentes, seccion,
+      directorNombre, directorCI, mppeNombre, mppeCI, observaciones
+    };
+
+    try {
+      await generateExcel31059(datosPlanilla, tipo);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  return (
+    <div className="p-6 bg-white rounded-lg shadow-md">
+      <h2 className="text-2xl font-bold text-siga-blue mb-4">Planilla 31059 - Resumen Final (1ro y 2do)</h2>
+      
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <select value={gradoId} onChange={e => setGradoId(e.target.value)} className="border p-2 rounded">
+          <option value="">Grado</option>
+          {Object.entries(GRADOS_MAP).map(([id, nombre]) => (
+            <option key={id} value={id}>{nombre}</option>
+          ))}
+        </select>
+
+        <select value={seccion} onChange={e => setSeccion(e.target.value)} className="border p-2 rounded">
+          <option value="">Sección</option>
+          {['A', 'B', 'C', 'D', 'E'].map(s => <option key={s} value={s}>Sección {s}</option>)}
+        </select>
+
+        <button onClick={buscar} disabled={loading} className="bg-siga-blue text-white px-4 py-2 rounded hover:bg-blue-800">
+          {loading ? 'Buscando...' : 'Buscar'}
+        </button>
+      </div>
+
+      {estudiantes.length > 0 && (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 border rounded bg-gray-50">
+            <div>
+              <label className="block text-sm font-bold">Director(a) - Apellidos y Nombres</label>
+              <input type="text" value={directorNombre} onChange={e => setDirectorNombre(e.target.value)} className="border p-1 w-full rounded" />
+            </div>
+            <div>
+              <label className="block text-sm font-bold">Director(a) - Cédula</label>
+              <input type="text" value={directorCI} onChange={e => setDirectorCI(e.target.value)} className="border p-1 w-full rounded" />
+            </div>
+            <div>
+              <label className="block text-sm font-bold">Funcionario MPPE - Apellidos y Nombres</label>
+              <input type="text" value={mppeNombre} onChange={e => setMppeNombre(e.target.value)} className="border p-1 w-full rounded" />
+            </div>
+            <div>
+              <label className="block text-sm font-bold">Funcionario MPPE - Cédula</label>
+              <input type="text" value={mppeCI} onChange={e => setMppeCI(e.target.value)} className="border p-1 w-full rounded" />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-bold">Observaciones</label>
+              <textarea value={observaciones} onChange={e => setObservaciones(e.target.value)} className="border p-1 w-full rounded" rows={2}></textarea>
+            </div>
+          </div>
+
+          <div className="flex gap-4 mb-4">
+            <button onClick={() => exportarTipo('CI')} className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 font-bold flex-1">
+              📥 Exportar CI (Cédula de Identidad)
+            </button>
+            <button onClick={() => exportarTipo('CE')} className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 font-bold flex-1">
+              📥 Exportar CE (Cédula Escolar)
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}

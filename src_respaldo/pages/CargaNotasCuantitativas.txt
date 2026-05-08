@@ -1,0 +1,479 @@
+import { useState, useEffect } from 'react';
+import { Save, Calendar, Plus, X, Trash2, Edit3, Lock, CheckCircle, BookOpen } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const API = 'http://192.168.10.3:3000';
+
+const NOMBRES_GRADOS: Record<string, string> = {
+  '16': '1er Año', '17': '2do Año', '18': '3er Año', '19': '4to Año', '20': '5to Año',
+};
+
+const GRADOS_IDS: Record<string, number> = {
+  '1er Año': 16, '2do Año': 17, '3er Año': 18, '4to Año': 19, '5to Año': 20,
+};
+
+const TODAS_SECCIONES = ['A', 'B', 'C', 'D', 'E'];
+
+interface Evaluacion {
+  id?: number;
+  nombre_evaluacion: string;
+  fecha: string;
+  ponderacion: number;
+}
+
+interface NotaEstudiante {
+  estudiante_id: number;
+  evaluacion_id: number;
+  nota: number | null;
+}
+
+export default function CargaNotasCuantitativas({ cedula }: { cedula: string }) {
+  const getToken = () => localStorage.getItem('siga_token') || '';
+  const authHeaders = getToken() ? { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' } : {};
+
+  const [asignaciones, setAsignaciones] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  // Selección
+  const [grado, setGrado] = useState<string | null>(null);
+  const [seccion, setSeccion] = useState<string | null>(null);
+  const [materiaId, setMateriaId] = useState<number | null>(null);
+  const [materiaNombre, setMateriaNombre] = useState<string>('');
+  const [lapso, setLapso] = useState<number>(1);
+
+  // Evaluaciones
+  const [evaluaciones, setEvaluaciones] = useState<Evaluacion[]>([]);
+  const [showEvalModal, setShowEvalModal] = useState(false);
+  const [editingEval, setEditingEval] = useState<Evaluacion | null>(null);
+  
+  // Estudiantes y notas
+  const [estudiantes, setEstudiantes] = useState<any[]>([]);
+  const [notas, setNotas] = useState<Record<number, Record<number, number | null>>>({}); // [estudiante_id][evaluacion_id] = nota
+
+  const [isClosed, setIsClosed] = useState(false);
+
+  // Cargar asignaciones del docente
+  useEffect(() => {
+    const fetchAsignaciones = async () => {
+      try {
+        const res = await fetch(`${API}/api/docente/asignaciones/${cedula}`, { headers: authHeaders });
+        const data = await res.json();
+        const formateadas = data.map((a: any) => ({
+          grado: NOMBRES_GRADOS[String(a.grado)] || String(a.grado),
+          seccion: a.seccion,
+          materia: a.materia,
+          materia_id: a.materia_id || null
+        }));
+        setAsignaciones(formateadas);
+        if (formateadas.length > 0) {
+          setGrado(formateadas[0].grado);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAsignaciones();
+  }, [cedula]);
+
+  // Obtener grados únicos
+  const gradosUnicos = [...new Map(asignaciones.filter(a => a.grado).map(a => [a.grado, a.grado])).values()];
+
+  const seccionesDelGrado = asignaciones
+    .filter(a => a.grado === grado)
+    .reduce((acc: string[], curr) => {
+      if (!acc.includes(curr.seccion)) acc.push(curr.seccion);
+      return acc;
+    }, [] as string[]);
+
+  const handleGradoChange = (g: string) => {
+    setGrado(g);
+    setSeccion(null);
+    setMateriaId(null);
+  };
+
+  // Al cambiar grado/seccion/materia, cargar evaluaciones y estudiantes
+  useEffect(() => {
+    if (!grado || !seccion || !materiaId) return;
+    
+    const fetchData = async () => {
+      try {
+        // Cargar evaluaciones
+        const evalRes = await fetch(`${API}/api/cuantitativas/evaluaciones?grado=${grado}&seccion=${seccion}&materia_id=${materiaId}&lapso=${lapso}`, { headers: authHeaders });
+        const evalData = await evalRes.json();
+        setEvaluaciones(evalData);
+
+        // Cargar estudiantes
+        const gradoId = GRADOS_IDS[grado];
+        const estRes = await fetch(`${API}/api/estudiantes/${gradoId}/${seccion}`, { headers: authHeaders });
+        const estData = await estRes.json();
+        const sortedEst = Array.isArray(estData) ? [...estData].sort((a, b) => {
+          const numA = parseInt(String(a.cedula).replace(/\D/g, ''), 10) || 0;
+          const numB = parseInt(String(b.cedula).replace(/\D/g, ''), 10) || 0;
+          return numA - numB;
+        }) : [];
+        setEstudiantes(sortedEst);
+
+        // Cargar notas existentes
+        const notasRes = await fetch(`${API}/api/cuantitativas/notas?grado=${grado}&seccion=${seccion}&materia_id=${materiaId}&lapso=${lapso}`, { headers: authHeaders });
+        const notasData = await notasRes.json();
+        
+        const notasMap: Record<number, Record<number, number | null>> = {};
+        notasData.forEach((n: any) => {
+          if (!notasMap[n.estudiante_id]) notasMap[n.estudiante_id] = {};
+          notasMap[n.estudiante_id][n.evaluacion_id] = n.nota;
+        });
+        setNotas(notasMap);
+
+        // Verificar si el momento está cerrado
+        const cierreRes = await fetch(`${API}/api/momentos/cerrado?lapso=${lapso}`, { headers: authHeaders });
+        const { cerrado } = await cierreRes.json();
+        setIsClosed(cerrado);
+
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchData();
+  }, [grado, seccion, materiaId, lapso]);
+
+  // Al seleccionar sección, buscar la materia automáticamente
+  useEffect(() => {
+    if (grado && seccion) {
+      const asignacion = asignaciones.find(a => a.grado === grado && a.seccion === seccion);
+      if (asignacion) {
+        setMateriaNombre(asignacion.materia);
+        // Si tienes materia_id en la base de datos, usarlo
+        setMateriaId(asignacion.materia_id || 1); // Temporal: asignar ID por defecto
+      }
+    }
+  }, [grado, seccion, asignaciones]);
+
+  const handleNotaChange = (estudianteId: number, evaluacionId: number, valor: string) => {
+    if (isClosed) return;
+    const nota = valor === '' ? null : parseInt(valor);
+    if (nota !== null && (nota < 0 || nota > 20)) return;
+    
+    setNotas(prev => ({
+      ...prev,
+      [estudianteId]: {
+        ...prev[estudianteId],
+        [evaluacionId]: nota
+      }
+    }));
+    setSaved(false);
+  };
+
+  const agregarEvaluacion = async (evalData: Evaluacion) => {
+    try {
+      const res = await fetch(`${API}/api/cuantitativas/evaluaciones`, {
+        method: 'POST',
+        headers: authHeaders,
+        body: JSON.stringify({
+          ...evalData,
+          grado,
+          seccion,
+          materia_id: materiaId,
+          lapso
+        })
+      });
+      const nuevaEval = await res.json();
+      setEvaluaciones([...evaluaciones, nuevaEval]);
+      setShowEvalModal(false);
+      setEditingEval(null);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const eliminarEvaluacion = async (evalId: number) => {
+    if (confirm('¿Eliminar esta evaluación? Se perderán todas las notas.')) {
+      try {
+        await fetch(`${API}/api/cuantitativas/evaluaciones/${evalId}`, {
+          method: 'DELETE',
+          headers: authHeaders
+        });
+        setEvaluaciones(evaluaciones.filter(e => e.id !== evalId));
+        // Limpiar notas de esa evaluación
+        const newNotas = { ...notas };
+        Object.keys(newNotas).forEach(estId => {
+          delete newNotas[parseInt(estId)][evalId];
+        });
+        setNotas(newNotas);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
+
+  const guardarNotas = async () => {
+    setSaving(true);
+    try {
+      const payload = [];
+      for (const estudiante of estudiantes) {
+        for (const evaluacion of evaluaciones) {
+          const nota = notas[estudiante.id]?.[evaluacion.id!] ?? null;
+          if (nota !== null) {
+            payload.push({
+              estudiante_id: estudiante.id,
+              evaluacion_id: evaluacion.id,
+              nota
+            });
+          }
+        }
+      }
+      
+      await fetch(`${API}/api/cuantitativas/notas`, {
+        method: 'POST',
+        headers: authHeaders,
+        body: JSON.stringify({ notas: payload })
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Calcular promedio por estudiante
+  const calcularPromedio = (estudianteId: number) => {
+    const notasEstudiante = notas[estudianteId] || {};
+    const notasValidas = Object.values(notasEstudiante).filter(n => n !== null) as number[];
+    if (notasValidas.length === 0) return null;
+    const suma = notasValidas.reduce((a, b) => a + b, 0);
+    return Math.round(suma / notasValidas.length);
+  };
+
+  if (loading) {
+    return <div className="p-10 text-slate-400 font-bold text-center animate-pulse">Cargando sistema de notas cuantitativas...</div>;
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-50 p-4 md:p-8 max-w-[1600px] mx-auto pb-24">
+      
+      {/* HEADER */}
+      <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] px-6 md:px-10 py-6 md:py-8 mb-8 shadow-sm border-b-[8px] border-emerald-600 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+        <div>
+          <h1 className="text-2xl md:text-4xl font-black text-slate-900 uppercase tracking-tighter italic leading-none">Carga de Notas Cuantitativas</h1>
+          <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-[0.2em] mt-3">Evaluaciones planificadas por el docente</p>
+        </div>
+        <div className="flex items-center gap-3">
+          {saved && <span className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-emerald-50 text-emerald-700 text-[10px] font-black"><CheckCircle className="w-4 h-4" />Guardado</span>}
+          <button onClick={() => setShowEvalModal(true)} disabled={isClosed || !seccion}
+            className="px-5 py-3 bg-orange-50 text-orange-600 rounded-xl font-black text-[10px] uppercase tracking-widest border-2 border-orange-200 hover:bg-orange-100 transition disabled:opacity-30">
+            <Plus className="w-4 h-4 inline mr-1" /> Planificar Evaluación
+          </button>
+          <button onClick={guardarNotas} disabled={saving || isClosed || !seccion}
+            className="siga-btn-primary flex items-center gap-2 disabled:opacity-50">
+            <Save className="w-4 h-4" /> {saving ? 'Guardando...' : 'Guardar Notas'}
+          </button>
+        </div>
+      </div>
+
+      {/* SELECTORES */}
+      <div className="bg-white rounded-[2rem] p-6 md:p-8 shadow-sm border border-slate-200 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {/* Lapso */}
+          <div>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-3">Momento</p>
+            <div className="flex gap-2">
+              {[1, 2, 3].map(m => (
+                <button key={m} onClick={() => setLapso(m)}
+                  className={`flex-1 py-3 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all border-2
+                    ${lapso === m ? 'bg-slate-900 text-white border-slate-900' : 'bg-slate-50 text-slate-400 border-slate-100'}`}>
+                  {m}°
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Grado */}
+          <div>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-3">Grado / Año</p>
+            {gradosUnicos.length > 1 ? (
+              <div className="flex flex-wrap gap-2">
+                {gradosUnicos.map(g => (
+                  <button key={g} onClick={() => handleGradoChange(g)}
+                    className={`px-4 py-2 rounded-xl font-black text-[10px] uppercase border-2 ${grado === g ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-400 border-slate-100'}`}>
+                    {g}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xl font-black text-slate-800">{grado || '—'}</p>
+            )}
+          </div>
+
+          {/* Sección */}
+          <div>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-3">Sección</p>
+            <div className="flex gap-2">
+              {TODAS_SECCIONES.filter(s => seccionesDelGrado.includes(s)).map(s => (
+                <button key={s} onClick={() => setSeccion(s)}
+                  className={`px-4 py-2 rounded-xl font-black text-sm ${seccion === s ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Materia */}
+          <div>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-3">Asignatura</p>
+            <p className="text-xl font-black text-slate-800">{materiaNombre || '—'}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ALERTA DE BLOQUEO */}
+      {isClosed && (
+        <div className="bg-red-50 border-2 border-red-100 rounded-3xl p-6 mb-8 flex items-center gap-4">
+          <Lock className="w-8 h-8 text-red-600" />
+          <div>
+            <h4 className="font-black text-red-900">Momento Cerrado</h4>
+            <p className="text-[10px] text-red-600">Este lapso ha sido cerrado por Control de Estudios. No se pueden modificar notas.</p>
+          </div>
+        </div>
+      )}
+
+      {/* TABLA DE NOTAS */}
+      <AnimatePresence mode="wait">
+        {!seccion || evaluaciones.length === 0 ? (
+          <motion.div className="bg-white rounded-[2.5rem] p-20 text-center border-2 border-dashed border-slate-200">
+            <BookOpen className="w-16 h-16 text-slate-200 mx-auto mb-4" />
+            <h3 className="text-xl font-black text-slate-300">
+              {!seccion ? 'Seleccione una sección' : 'No hay evaluaciones planificadas'}
+            </h3>
+            <p className="text-sm text-slate-400 mt-2">Use el botón "Planificar Evaluación" para crear evaluaciones</p>
+          </motion.div>
+        ) : (
+          <motion.div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden">
+            <div className="px-6 py-5 bg-slate-900 flex justify-between">
+              <h3 className="font-black text-white">{grado} - Sección {seccion} - {lapso}° Momento</h3>
+              <span className="text-[10px] text-blue-400">{estudiantes.length} estudiantes</span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[800px]">
+                <thead className="bg-slate-50 border-b">
+                  <tr>
+                    <th className="px-4 py-4 text-left text-[10px] font-black text-slate-400">#</th>
+                    <th className="px-4 py-4 text-left text-[10px] font-black text-slate-400">Estudiante</th>
+                    {evaluaciones.map((ev, idx) => (
+                      <th key={ev.id} className="px-2 py-4 text-center min-w-[100px]">
+                        <div className="flex items-center justify-center gap-1">
+                          <span className="text-[10px] font-black">{ev.nombre_evaluacion}</span>
+                          {!isClosed && (
+                            <button onClick={() => eliminarEvaluacion(ev.id!)} className="text-red-400 hover:text-red-600">
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                        <p className="text-[8px] text-slate-400">{ev.fecha}</p>
+                      </th>
+                    ))}
+                    <th className="px-4 py-4 text-center text-[10px] font-black text-slate-400">Promedio</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {estudiantes.map((est, idx) => {
+                    const promedio = calcularPromedio(est.id);
+                    return (
+                      <tr key={est.id} className="hover:bg-slate-50">
+                        <td className="px-4 py-3 text-xs font-mono text-slate-400">{idx + 1}</td>
+                        <td className="px-4 py-3">
+                          <p className="font-bold text-sm">{est.apellidos}, {est.nombres}</p>
+                          <p className="text-[9px] text-slate-400">V-{est.cedula}</p>
+                        </td>
+                        {evaluaciones.map(ev => {
+                          const nota = notas[est.id]?.[ev.id!] ?? '';
+                          return (
+                            <td key={ev.id} className="px-2 py-2 text-center">
+                              <input
+                                type="number"
+                                min="0"
+                                max="20"
+                                value={nota === null ? '' : nota}
+                                onChange={(e) => handleNotaChange(est.id, ev.id!, e.target.value)}
+                                disabled={isClosed}
+                                className="w-16 h-10 text-center font-black rounded-xl border-2 border-slate-200 focus:border-emerald-500 outline-none disabled:bg-slate-50"
+                              />
+                            </td>
+                          );
+                        })}
+                        <td className="px-4 py-3 text-center">
+                          <span className={`font-black text-lg ${promedio !== null && promedio >= 10 ? 'text-emerald-600' : 'text-red-500'}`}>
+                            {promedio !== null ? promedio : '—'}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* MODAL DE PLANIFICACIÓN */}
+      <ModalEvaluacion
+        open={showEvalModal}
+        onClose={() => { setShowEvalModal(false); setEditingEval(null); }}
+        onSave={agregarEvaluacion}
+        editingEval={editingEval}
+      />
+    </div>
+  );
+}
+
+// Modal para agregar/editar evaluación
+function ModalEvaluacion({ open, onClose, onSave, editingEval }: any) {
+  const [nombre, setNombre] = useState('');
+  const [fecha, setFecha] = useState(new Date().toISOString().split('T')[0]);
+  const [ponderacion, setPonderacion] = useState(0);
+
+  useEffect(() => {
+    if (editingEval) {
+      setNombre(editingEval.nombre_evaluacion);
+      setFecha(editingEval.fecha);
+      setPonderacion(editingEval.ponderacion);
+    } else {
+      setNombre('');
+      setFecha(new Date().toISOString().split('T')[0]);
+      setPonderacion(0);
+    }
+  }, [editingEval]);
+
+  if (!open) return null;
+
+  const handleSubmit = () => {
+    if (!nombre.trim()) return;
+    onSave({ nombre_evaluacion: nombre, fecha, ponderacion });
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-white rounded-[2rem] max-w-md w-full p-6" onClick={e => e.stopPropagation()}>
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-xl font-black">{editingEval ? 'Editar' : 'Nueva'} Evaluación</h3>
+          <button onClick={onClose}><X className="w-5 h-5 text-slate-400" /></button>
+        </div>
+        <div className="space-y-4">
+          <input type="text" placeholder="Nombre de la evaluación" value={nombre} onChange={e => setNombre(e.target.value)}
+            className="w-full p-3 rounded-xl border-2 border-slate-200 font-black text-sm" />
+          <input type="date" value={fecha} onChange={e => setFecha(e.target.value)}
+            className="w-full p-3 rounded-xl border-2 border-slate-200" />
+        </div>
+        <button onClick={handleSubmit} className="w-full mt-6 bg-slate-900 text-white py-3 rounded-xl font-black text-sm">
+          Guardar Evaluación
+        </button>
+      </div>
+    </div>
+  );
+}

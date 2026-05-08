@@ -1,0 +1,145 @@
+import { useState, useEffect } from 'react';
+import { Search, Users } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+const API = 'http://192.168.10.3:3000';
+// Mapeo rápido porque el backend de asignaciones devuelve texto, y el de estudiantes pide el ID
+const GRADOS_IDS: Record<string, number> = {
+  '1er Año': 16,
+  '2do Año': 17,
+  '3er Año': 18,
+  '4to Año': 19,
+  '5to Año': 20
+};
+
+interface Props { cedula: string; }
+
+export default function MiMatricula({ cedula }: Props) {
+  const [secciones, setSecciones] = useState<any[]>([]);
+  const [nomina, setNomina] = useState<any[]>([]);
+  const [seleccionada, setSeleccionada] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  // 1. Al montar, busca las secciones asignadas al docente
+  useEffect(() => {
+    const fetchAsignaciones = async () => {
+      try {
+        const res = await fetch(`${API}/api/docente/asignaciones/${cedula}`);
+        const data = await res.json();
+        
+        // Extraer secciones únicas (ej: "1er Año - A")
+        const unicas = data.reduce((acc: any[], curr: any) => {
+          const key = `${curr.grado}-${curr.seccion}`;
+          if (!acc.find(s => `${s.grado}-${s.seccion}` === key)) acc.push(curr);
+          return acc;
+        }, []);
+        
+        setSecciones(unicas);
+        if (unicas.length > 0) setSeleccionada(`${unicas[0].grado}-${unicas[0].seccion}`);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAsignaciones();
+  }, [cedula]);
+
+  // 2. Cuando cambia la sección seleccionada, busca los alumnos
+  useEffect(() => {
+    if (!seleccionada) return;
+    
+    const [gradoTexto, seccionTexto] = seleccionada.split('-');
+    const gradoId = GRADOS_IDS[gradoTexto.trim()];
+
+    if (!gradoId) return;
+
+    const fetchEstudiantes = async () => {
+      try {
+        const res = await fetch(`${API}/api/estudiantes/${gradoId}/${seccionTexto.trim()}`);
+        const data = await res.json();
+        setNomina(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchEstudiantes();
+  }, [seleccionada]);
+
+  if (loading) return <div className="p-10 text-slate-400 font-bold text-center animate-pulse">Cargando matrícula asignada...</div>;
+
+  return (
+    <div className="min-h-screen bg-slate-50 p-4 md:p-8">
+      <div className="max-w-[900px] mx-auto">
+        
+        {/* Header */}
+        <div className="bg-white rounded-[2rem] p-8 mb-6 shadow-sm border-b-4 border-blue-600">
+          <div className="flex items-center gap-3 mb-2">
+            <Users className="w-6 h-6 text-blue-600" />
+            <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Mi Matrícula</h1>
+          </div>
+          <p className="text-xs text-slate-500 font-bold">Secciones y estudiantes asignados a tu cargo</p>
+        </div>
+
+        {/* Selector de Secciones */}
+        {secciones.length > 0 && (
+          <div className="flex gap-3 mb-6 flex-wrap">
+            {secciones.map((s) => {
+              const key = `${s.grado}-${s.seccion}`;
+              const isActive = seleccionada === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => setSeleccionada(key)}
+                  className={`px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${
+                    isActive 
+                      ? 'bg-blue-600 text-white shadow-lg scale-105' 
+                      : 'bg-white text-slate-500 border border-slate-200 hover:border-blue-300'
+                  }`}
+                >
+                  {s.grado} "{s.seccion}"
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Tabla de Alumnos */}
+        <div className="bg-white rounded-[2rem] shadow-sm overflow-hidden border border-slate-200">
+          <table className="w-full text-left">
+            <thead className="bg-slate-50 border-b">
+              <tr>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">#</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Estudiante</th>
+                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Cédula</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {nomina.length === 0 && (
+                <tr><td colSpan={3} className="px-6 py-10 text-center text-slate-400 font-bold">No se encontraron alumnos para esta sección.</td></tr>
+              )}
+              {nomina.map((est: any, index: number) => (
+                <motion.tr 
+                  key={est.id} 
+                  initial={{ opacity: 0 }} 
+                  animate={{ opacity: 1 }} 
+                  transition={{ delay: index * 0.02 }}
+                  className="hover:bg-blue-50/30 transition-colors"
+                >
+                  <td className="px-6 py-4 font-mono text-slate-400 text-xs">{index + 1}</td>
+                  <td className="px-6 py-4">
+                    <span className="font-black text-slate-800 uppercase text-xs">{est.apellidos}, {est.nombres}</span>
+                  </td>
+                  <td className="px-6 py-4 font-mono font-black text-slate-600 text-xs">{est.cedula || 'Sin CI'}</td>
+                </motion.tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="px-6 py-3 bg-slate-50 border-t text-right">
+            <span className="text-[10px] font-bold text-slate-400 uppercase">Total en lista: {nomina.length}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,187 @@
+import ExcelJS from 'exceljs';
+
+// =======================================================
+// MAPEOS Y CONFIGURACIONES (Fuera de la función para que siempre sean visibles)
+// =======================================================
+
+const EF_ABBREVIATIONS: { [key: string]: string } = {
+  'DISTRITO CAPITAL': 'DC', 'AMAZONAS': 'AM', 'ANZOATEGUI': 'AN', 'APURE': 'AP',
+  'ARAGUA': 'AR', 'BARINAS': 'BA', 'BOLIVAR': 'BO', 'CARABOBO': 'CA', 'COJEDES': 'CO',
+  'DELTA AMACURO': 'DA', 'FALCON': 'FA', 'GUARICO': 'GU', 'LARA': 'LA', 'MERIDA': 'ME',
+  'MIRANDA': 'MI', 'MONAGAS': 'MO', 'NUEVA ESPARTA': 'NE', 'PORTUGUESA': 'PO', 'SUCRE': 'SU',
+  'TACHIRA': 'TA', 'TRUJILLO': 'TR', 'VARGAS': 'VA', 'YARACUY': 'YA', 'ZULIA': 'ZU',
+  'DEPENDENCIAS FEDERALES': 'DF'
+};
+
+const NOTAS_POR_GRADO: { [key: string]: number[] } = {
+  '16': [47, 48, 49, 50, 51, 52, 53, 54, 55],           // 1ro (9 materias)
+  '17': [47, 48, 49, 50, 51, 52, 53, 54, 55],           // 2do (9 materias)
+  '18': [47, 48, 49, 50, 51, 52, 53, 54, 55, 56],       // 3ro (10 materias)
+  '19': [47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57],       // 4to (11 materias)
+  '20': [47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58],       // 5to (12 materias)
+};
+
+// Traductor de Nombres de Materias (de la BD) a Códigos MPPE (para el Excel)
+const MATERIA_NOMBRE_A_CODIGO: { [key: string]: string } = {
+  'CASTELLANO': 'CA', 'INGLES Y OTRAS LENGUAS EXTRANJERAS': 'IO', 'MATEMATICAS': 'MA', 'EDUCACION FISICA': 'EF',
+  'ARTE Y PATRIMONIO': 'AP', 'CIENCIAS NATURALES': 'CN', 'GEOGRAFIA, HISTORIA Y CIUDADANIA': 'GH',
+  'ORIENTACION Y CONVIVENCIA': 'OC', 'PARTICIPACION EN GRUPOS DE CREACION, RECREACION Y PRODUCCION': 'PG',
+  'FISICA': 'FI', 'QUIMICA': 'QU', 'BIOLOGIA': 'BI',
+  'FORMACION PARA LA SOBERANIA NACIONAL': 'FS', 'CIENCIAS DE LA TIERRA': 'CT'
+};
+
+const FILAS_PROFESORES: { [key: string]: { [materia: string]: number } } = {
+  '16': { 'CA': 59, 'IO': 60, 'MA': 61, 'EF': 62, 'AP': 63, 'CN': 64, 'GH': 65, 'OC': 66, 'PG': 67 },
+  '17': { 'CA': 59, 'IO': 60, 'MA': 61, 'EF': 62, 'AP': 63, 'CN': 64, 'GH': 65, 'OC': 66, 'PG': 67 },
+  '18': { 'CA': 59, 'IO': 60, 'MA': 61, 'EF': 62, 'FI': 63, 'QU': 64, 'BI': 65, 'GH': 66, 'OC': 67, 'PG': 68 },
+  '19': { 'CA': 59, 'IO': 60, 'MA': 61, 'EF': 62, 'FI': 63, 'QU': 64, 'BI': 65, 'GH': 66, 'FS': 67, 'OC': 68, 'PG': 69 },
+  '20': { 'CA': 59, 'IO': 60, 'MA': 61, 'EF': 62, 'FI': 63, 'QU': 64, 'BI': 65, 'CT': 66, 'GH': 67, 'FS': 68, 'OC': 69, 'PG': 70 }
+};
+
+const FILAS_INSTITUCIONALES: { [key: string]: { directorNombre: number, directorCI: number, mppeNombre: number, mppeCI: number } } = {
+  '16': { directorNombre: 73, directorCI: 75, mppeNombre: 73, mppeCI: 75 }, // 1ro
+  '17': { directorNombre: 73, directorCI: 75, mppeNombre: 73, mppeCI: 75 }, // 2do
+  '18': { directorNombre: 74, directorCI: 76, mppeNombre: 74, mppeCI: 76 }, // 3ro
+  '19': { directorNombre: 75, directorCI: 77, mppeNombre: 75, mppeCI: 77 }, // 4to
+  '20': { directorNombre: 76, directorCI: 78, mppeNombre: 76, mppeCI: 78 }  // 5to
+};
+
+// Nombres oficiales de las materias para inyectar en la plantilla
+const NOMBRE_MATERIAS: { [key: string]: { [codigo: string]: string } } = {
+  '16': { 'CA': 'CASTELLANO', 'IO': 'INGLES Y OTRAS LENGUAS EXTRANJERAS', 'MA': 'MATEMATICAS', 'EF': 'EDUCACION FISICA', 'AP': 'ARTE Y PATRIMONIO', 'CN': 'CIENCIAS NATURALES', 'GH': 'GEOGRAFIA, HISTORIA Y CIUDADANIA', 'OC': 'ORIENTACION Y CONVIVENCIA', 'PG': 'PARTICIPACION EN GRUPOS DE CREACION, RECREACION Y PRODUCCION' },
+  '17': { 'CA': 'CASTELLANO', 'IO': 'INGLES Y OTRAS LENGUAS EXTRANJERAS', 'MA': 'MATEMATICAS', 'EF': 'EDUCACION FISICA', 'AP': 'ARTE Y PATRIMONIO', 'CN': 'CIENCIAS NATURALES', 'GH': 'GEOGRAFIA, HISTORIA Y CIUDADANIA', 'OC': 'ORIENTACION Y CONVIVENCIA', 'PG': 'PARTICIPACION EN GRUPOS DE CREACION, RECREACION Y PRODUCCION' },
+  '18': { 'CA': 'CASTELLANO', 'IO': 'INGLES Y OTRAS LENGUAS EXTRANJERAS', 'MA': 'MATEMATICAS', 'EF': 'EDUCACION FISICA', 'FI': 'FISICA', 'QU': 'QUIMICA', 'BI': 'BIOLOGIA', 'GH': 'GEOGRAFIA, HISTORIA Y CIUDADANIA', 'OC': 'ORIENTACION Y CONVIVENCIA', 'PG': 'PARTICIPACION EN GRUPOS DE CREACION, RECREACION Y PRODUCCION' },
+  '19': { 'CA': 'CASTELLANO', 'IO': 'INGLES Y OTRAS LENGUAS EXTRANJERAS', 'MA': 'MATEMATICAS', 'EF': 'EDUCACION FISICA', 'FI': 'FISICA', 'QU': 'QUIMICA', 'BI': 'BIOLOGIA', 'GH': 'GEOGRAFIA, HISTORIA Y CIUDADANIA', 'FS': 'FORMACION PARA LA SOBERANIA NACIONAL', 'OC': 'ORIENTACION Y CONVIVENCIA', 'PG': 'PARTICIPACION EN GRUPOS DE CREACION, RECREACION Y PRODUCCION' },
+  '20': { 'CA': 'CASTELLANO', 'IO': 'INGLES Y OTRAS LENGUAS EXTRANJERAS', 'MA': 'MATEMATICAS', 'EF': 'EDUCACION FISICA', 'FI': 'FISICA', 'QU': 'QUIMICA', 'BI': 'BIOLOGIA', 'CT': 'CIENCIAS DE LA TIERRA', 'GH': 'GEOGRAFIA, HISTORIA Y CIUDADANIA', 'FS': 'FORMACION PARA LA SOBERANIA NACIONAL', 'OC': 'ORIENTACION Y CONVIVENCIA', 'PG': 'PARTICIPACION EN GRUPOS DE CREACION, RECREACION Y PRODUCCION' }
+};
+
+const GRADO_FILE_MAP: { [key: string]: string } = {
+  '16': '1ro', '17': '2do', '18': '3ro', '19': '4to', '20': '5to'
+};
+
+// =======================================================
+// FUNCIÓN PRINCIPAL
+// =======================================================
+
+export async function generateExcel31059(datos: any, tipo: 'CI' | 'CE') {
+  const { estudiantes, definitivas, docentes, seccion, gradoId, directorNombre, directorCI, mppeNombre, mppeCI, observaciones } = datos;
+
+  const nombreGrado = GRADO_FILE_MAP[gradoId] || '1ro';
+  const templatePath = `/templates/31059_${nombreGrado}_${tipo}.xlsx`; 
+
+  try {
+    // 1. CARGAR PLANTILLA
+    const response = await fetch(templatePath);
+    if (!response.ok) throw new Error('No se encontró la plantilla: ' + templatePath);
+    
+    const arrayBuffer = await response.arrayBuffer();
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(arrayBuffer);
+    
+    const worksheet = workbook.worksheets[0];
+
+    // 2. FILTRAR ESTUDIANTES (CE / CI)
+    let estudiantesFiltrados = estudiantes;
+    if (tipo === 'CE') {
+      estudiantesFiltrados = estudiantes.filter((e: any) => e.tipo_documento === 'CE');
+    } else if (tipo === 'CI') {
+      estudiantesFiltrados = estudiantes.filter((e: any) => e.tipo_documento !== 'CE');
+    }
+
+    // 3. LLENAR ESTUDIANTES
+    const columnasNotas = NOTAS_POR_GRADO[gradoId] || NOTAS_POR_GRADO['16'];
+    const filaInicio = 17;
+    const maxEstudiantes = 35;
+
+    for (let i = 0; i < maxEstudiantes; i++) {
+      const fila = filaInicio + i;
+      const estudiante = estudiantesFiltrados[i];
+
+      if (estudiante) {
+        worksheet.getCell(`B${fila}`).value = estudiante.cedula;
+        worksheet.getCell(`O${fila}`).value = estudiante.apellidos;
+        worksheet.getCell(`X${fila}`).value = estudiante.nombres;
+        worksheet.getCell(`AI${fila}`).value = estudiante.lugar_nacimiento;
+        worksheet.getCell(`AP${fila}`).value = EF_ABBREVIATIONS[estudiante.entidad_federal?.toUpperCase()] || estudiante.entidad_federal;
+        worksheet.getCell(`AQ${fila}`).value = estudiante.sexo;
+        
+        // Fecha de nacimiento (Ajusta según cómo venga de la BD, esto asume que viene separado)
+        let dia = '', mes = '', anio = '';
+        if (estudiante.fecha_nacimiento) {
+            // Quitamos la parte de la hora si existe (ej: "2013-09-22T04:00:00.000Z" -> "2013-09-22")
+            const fechaLimpia = String(estudiante.fecha_nacimiento).split('T')[0];
+            const partes = fechaLimpia.split('-');
+            if (partes.length === 3) {
+                anio = partes[0];
+                mes = partes[1];
+                dia = partes[2];
+            }
+        }
+        worksheet.getCell(`AR${fila}`).value = dia;
+        worksheet.getCell(`AS${fila}`).value = mes;
+        worksheet.getCell(`AT${fila}`).value = anio;
+
+        // Notas
+        const notasEstudiante = definitivas[estudiante.id] || {};
+        columnasNotas.forEach((col, index) => {
+          const valorNota = notasEstudiante[index] || ''; // Ajusta el índice según tu estructura de definitivas
+          worksheet.getCell(fila, col).value = valorNota;
+        });
+      } else {
+        // Llenar vacíos con ***
+        worksheet.getCell(`B${fila}`).value = '***';
+        worksheet.getCell(`O${fila}`).value = '***';
+        worksheet.getCell(`X${fila}`).value = '***';
+        worksheet.getCell(`AI${fila}`).value = '***';
+        worksheet.getCell(`AP${fila}`).value = '***';
+        worksheet.getCell(`AQ${fila}`).value = '***';
+        worksheet.getCell(`AR${fila}`).value = '***';
+        worksheet.getCell(`AS${fila}`).value = '***';
+        worksheet.getCell(`AT${fila}`).value = '***';
+        // Limpiar notas vacías
+        columnasNotas.forEach(col => worksheet.getCell(fila, col).value = '');
+      }
+    }
+
+        // 4. LLENAR PROFESORES Y NOMBRES DE MATERIAS
+    const filasProfe = FILAS_PROFESORES[gradoId] || FILAS_PROFESORES['16'];
+    
+    // 1. Primero inyectamos los NOMBRES DE MATERIAS
+    Object.entries(filasProfe).forEach(([codigo, fila]) => {
+      worksheet.getCell(`U${fila}`).value = '';
+      worksheet.getCell(`AK${fila}`).value = '';
+    });
+
+    docentes.forEach((docente: any) => {
+      const codigoMateria = docente.materia_codigo; 
+      if (codigoMateria && filasProfe[codigoMateria]) {
+        const fila = filasProfe[codigoMateria];
+        worksheet.getCell(`U${fila}`).value = docente.nombre_completo; 
+        worksheet.getCell(`AK${fila}`).value = docente.cedula;
+      }
+    });
+
+    // 5. LLENAR INSTITUCIONAL
+    const filasInst = FILAS_INSTITUCIONALES[gradoId] || FILAS_INSTITUCIONALES['16'];
+    worksheet.getCell('AZ65').value = seccion;
+    worksheet.getCell(`A${filasInst.directorNombre}`).value = directorNombre;
+    worksheet.getCell(`A${filasInst.directorCI}`).value = directorCI;
+    worksheet.getCell(`AN${filasInst.mppeNombre}`).value = mppeNombre;
+    worksheet.getCell(`AN${filasInst.mppeCI}`).value = mppeCI;
+    worksheet.getCell('Q68').value = observaciones; // O la celda que uses para observaciones
+
+    // 6. DESCARGAR ARCHIVO
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Planilla_31059_${nombreGrado}_Seccion${seccion}_${tipo}.xlsx`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+
+  } catch (error) {
+    console.error('Error real generando Excel:', error);
+    throw error; // Lanzamos el error para que el Frontend lo atrape en su catch
+  }
+}

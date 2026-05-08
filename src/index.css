@@ -1,0 +1,225 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700;1,800;1,900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ================================================================
+   SIGA DESIGN SYSTEM — Estilo Bold-Brutalist
+   Inspirado en SIGA CE La Paz / Coordinación Pedagógica
+   Filosofía: Peso tipográfico máximo + bordes redondeados extremos
+              + fondo slate + sidebar oscuro slate-900
+================================================================ */
+
+:root {
+  /* Typography */
+  --font-sans: Inter, system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", Consolas, monospace;
+
+  /* Radius — SIGA usa rounded-[2rem] a rounded-[3.5rem] */
+  --radius: 1rem;
+
+  /* ── Paleta Base (bg-slate-100) ── */
+  --background:        oklch(0.96 0.003 240);   /* slate-100 */
+  --foreground:        oklch(0.13 0.01 240);    /* slate-900 */
+
+  /* ── Cards (bg-white con sombra sutil) ── */
+  --card:              oklch(1 0 0);
+  --card-foreground:   oklch(0.13 0.01 240);
+
+  --popover:           oklch(1 0 0);
+  --popover-foreground: oklch(0.13 0.01 240);
+
+  /* ── Primary — Azul naval profundo (border-b-8 border-blue-900) ── */
+  --primary:           oklch(0.25 0.075 240);   /* blue-900 #1e3a5f */
+  --primary-foreground: oklch(0.99 0 0);
+
+  /* ── Secondary — Slate medio ── */
+  --secondary:         oklch(0.93 0.004 240);   /* slate-200 */
+  --secondary-foreground: oklch(0.25 0.02 240);
+
+  /* ── Muted — Slate suave ── */
+  --muted:             oklch(0.94 0.004 240);   /* slate-100/150 */
+  --muted-foreground:  oklch(0.52 0.012 240);   /* slate-400/500 */
+
+  /* ── Accent — Azul vivo (hover, focus, badges) ── */
+  --accent:            oklch(0.55 0.19 240);    /* blue-600 */
+  --accent-foreground: oklch(0.99 0 0);
+
+  /* ── Destructive — Rojo SIGA ── */
+  --destructive:       oklch(0.45 0.22 22);     /* red-700 */
+  --destructive-foreground: oklch(0.99 0 0);
+
+  /* ── Warning — Naranja SIGA ── */
+  --warning:           oklch(0.62 0.19 50);     /* orange-500 */
+  --warning-foreground: oklch(0.99 0 0);
+
+  /* ── Success — Emerald ── */
+  --success:           oklch(0.58 0.17 152);    /* emerald-600 */
+  --success-foreground: oklch(0.99 0 0);
+
+  --border:            oklch(0.88 0.006 240);   /* slate-200 */
+  --input:             oklch(0.94 0.004 240);   /* slate-100 */
+  --ring:              oklch(0.55 0.19 240);    /* blue-600 */
+
+  /* Charts */
+  --chart-1:           oklch(0.45 0.22 22);     /* red-700 */
+  --chart-2:           oklch(0.55 0.19 240);    /* blue-600 */
+  --chart-3:           oklch(0.58 0.17 152);    /* emerald-600 */
+  --chart-4:           oklch(0.62 0.19 50);     /* orange-500 */
+  --chart-5:           oklch(0.25 0.075 240);   /* blue-900 */
+
+  /* ── Sidebar — Slate-900 oscuro (el corazón del diseño SIGA) ── */
+  --sidebar:                    oklch(0.13 0.01 240);   /* slate-900 */
+  --sidebar-foreground:         oklch(0.82 0.008 240);  /* slate-300 */
+  --sidebar-primary:            oklch(0.55 0.19 240);   /* blue-600 */
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent:             oklch(0.19 0.015 240);  /* slate-800 hover */
+  --sidebar-accent-foreground:  oklch(0.99 0 0);
+  --sidebar-border:             oklch(0.22 0.012 240);  /* slate-800 */
+  --sidebar-ring:               oklch(0.55 0.19 240);
+}
+
+@theme inline {
+  --color-background:              var(--background);
+  --color-foreground:              var(--foreground);
+  --color-card:                    var(--card);
+  --color-card-foreground:         var(--card-foreground);
+  --color-popover:                 var(--popover);
+  --color-popover-foreground:      var(--popover-foreground);
+  --color-primary:                 var(--primary);
+  --color-primary-foreground:      var(--primary-foreground);
+  --color-secondary:               var(--secondary);
+  --color-secondary-foreground:    var(--secondary-foreground);
+  --color-muted:                   var(--muted);
+  --color-muted-foreground:        var(--muted-foreground);
+  --color-accent:                  var(--accent);
+  --color-accent-foreground:       var(--accent-foreground);
+  --color-destructive:             var(--destructive);
+  --color-destructive-foreground:  var(--destructive-foreground);
+  --color-warning:                 var(--warning);
+  --color-warning-foreground:      var(--warning-foreground);
+  --color-success:                 var(--success);
+  --color-success-foreground:      var(--success-foreground);
+  --color-border:                  var(--border);
+  --color-input:                   var(--input);
+  --color-ring:                    var(--ring);
+  --color-chart-1:                 var(--chart-1);
+  --color-chart-2:                 var(--chart-2);
+  --color-chart-3:                 var(--chart-3);
+  --color-chart-4:                 var(--chart-4);
+  --color-chart-5:                 var(--chart-5);
+  --color-sidebar:                 var(--sidebar);
+  --color-sidebar-foreground:      var(--sidebar-foreground);
+  --color-sidebar-primary:         var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent:          var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border:          var(--sidebar-border);
+  --color-sidebar-ring:            var(--sidebar-ring);
+  --font-sans:  var(--font-sans);
+  --font-mono:  var(--font-mono);
+  --radius-sm:  calc(var(--radius) - 4px);
+  --radius-md:  calc(var(--radius) - 2px);
+  --radius-lg:  var(--radius);
+  --radius-xl:  calc(var(--radius) + 4px);
+}
+
+/* ================================================================
+   BASE STYLES — Tipografía SIGA: headings BLACK + UPPERCASE
+================================================================ */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply scroll-smooth antialiased;
+  }
+  body {
+    @apply bg-background text-foreground font-sans min-h-screen;
+    font-feature-settings: "cv02","cv03","cv04","cv11";
+  }
+
+  /* Headings: BLACK + tracking tight, como el SIGA */
+  h1 { @apply font-black tracking-tighter uppercase leading-none; }
+  h2 { @apply font-black tracking-tighter uppercase leading-tight; }
+  h3 { @apply font-black tracking-tight; }
+  h4, h5, h6 { @apply font-bold tracking-tight; }
+
+  code, pre { @apply font-mono; }
+
+  ::selection {
+    background: color-mix(in srgb, var(--primary) 20%, transparent);
+    color: var(--primary);
+  }
+
+  /* Scrollbar SIGA — delgado, slate */
+  ::-webkit-scrollbar       { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--foreground) 18%, transparent);
+    border-radius: 99px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--foreground) 35%, transparent);
+  }
+}
+
+/* ================================================================
+   UTILITY CLASSES — helpers SIGA reutilizables
+================================================================ */
+@layer utilities {
+  /* Etiqueta de sección pequeña (como los headers de tabla del SIGA) */
+  .siga-label {
+    @apply text-[9px] font-black uppercase tracking-[0.22em] text-muted-foreground;
+  }
+
+  /* Número grande al estilo KPI */
+  .siga-kpi {
+    @apply text-5xl font-black text-slate-900 leading-none;
+  }
+
+  /* Badge de estado SIGA */
+  .siga-badge-red    { @apply px-3 py-1 bg-red-100 text-red-700 rounded-xl text-[8px] font-black uppercase border border-red-200; }
+  .siga-badge-orange { @apply px-3 py-1 bg-orange-100 text-orange-600 rounded-xl text-[8px] font-black uppercase border border-orange-200; }
+  .siga-badge-green  { @apply px-3 py-1 bg-emerald-100 text-emerald-700 rounded-xl text-[8px] font-black uppercase border border-emerald-200; }
+  .siga-badge-blue   { @apply px-3 py-1 bg-blue-100 text-blue-700 rounded-xl text-[8px] font-black uppercase border border-blue-200; }
+  .siga-badge-slate  { @apply px-3 py-1 bg-slate-100 text-slate-600 rounded-xl text-[8px] font-black uppercase border border-slate-200; }
+
+  /* Botón primario SIGA */
+  .siga-btn-primary {
+    @apply px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest bg-primary text-primary-foreground hover:opacity-90 transition shadow-lg;
+  }
+  .siga-btn-dark {
+    @apply px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest bg-slate-900 text-white hover:bg-slate-800 transition shadow-lg;
+  }
+  .siga-btn-ghost {
+    @apply px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest bg-white/10 hover:bg-white/20 text-white transition border border-white/20;
+  }
+
+  /* Card SIGA */
+  .siga-card {
+    @apply bg-white rounded-[2rem] shadow-sm;
+  }
+  .siga-card-header {
+    @apply bg-white rounded-[2.5rem] p-8 shadow-sm border-b-8 border-primary;
+  }
+
+  /* Input SIGA */
+  .siga-input {
+    @apply w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-3xl outline-none
+           focus:border-primary font-bold text-sm text-slate-700 shadow-inner transition;
+  }
+  /* Animaciones del login */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeIn { animation: fadeIn 0.3s ease-out; }
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+}
+.animate-shake { animation: shake 0.3s ease; }
+}

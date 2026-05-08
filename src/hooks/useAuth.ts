@@ -1,0 +1,149 @@
+import { useState } from 'react';
+import type { RolAsignado } from '@/types/auth';
+
+const API = `http://${window.location.hostname}:3000`;
+
+// === Huella digital ===
+function getDeviceFingerprint(): string {
+    let fp = localStorage.getItem('siga_device_fp');
+    if (fp) return fp;
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (ctx) { ctx.textBaseline = 'top'; ctx.font = '14px Arial'; ctx.fillText('SIGA-LaPaz-2024', 2, 2); }
+    const canvasData = canvas?.toDataURL() || '';
+    const partes = [canvasData, `${screen.width}x${screen.height}`, String(screen.colorDepth), navigator.language, String(navigator.hardwareConcurrency || 0), navigator.platform || '', String(new Date().getTimezoneOffset()), String(navigator.maxTouchPoints || 0)];
+    const raw = partes.join('|||');
+    let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+    for (let i = 0; i < raw.length; i++) { const ch = raw.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507); h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507); h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    fp = (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16).padStart(16, '0');
+    localStorage.setItem('siga_device_fp', fp);
+    return fp;
+}
+
+// === Tipos ===
+export interface RolSeleccionado { codigo: string; nombre: string; etiqueta: string; icono: string; color: string; ruta: string; }
+export interface User { id: number; cedula: string; nombres: string; apellidos: string; rol: RolSeleccionado; }
+
+interface AuthState {
+    user: User | null;
+    isAuthenticated: boolean;
+    loading: boolean;
+    step: 'idle' | 'password' | 'seleccion_rol' | 'dispositivo_bloqueado' | 'autenticado';
+    rolesDisponibles: RolAsignado[];
+    nombreCompleto: string | null;
+    dispositivoNuevo: boolean;
+    error: string | null;
+    token: string | null;
+}
+
+// === Estado inicial: lee localStorage SIN useEffect (evita pantalla blanca) ===
+function estadoInicial(): AuthState {
+    const saved = localStorage.getItem('siga_user');
+    const token = localStorage.getItem('siga_token');
+    const fp = localStorage.getItem('siga_device_fp');
+    if (saved && token && fp) {
+        try { return { user: JSON.parse(saved), isAuthenticated: true, loading: false, step: 'autenticado', rolesDisponibles: [], nombreCompleto: null, dispositivoNuevo: false, error: null, token: null }; }
+        catch { localStorage.removeItem('siga_user'); localStorage.removeItem('siga_token'); }
+    }
+    return { user: null, isAuthenticated: false, loading: false, step: 'idle', rolesDisponibles: [], nombreCompleto: null, dispositivoNuevo: false, error: null, token: null };
+}
+
+export function useAuth() {
+    const [auth, setAuth] = useState<AuthState>(estadoInicial);
+
+    // === Guardar sesión (JWT con UTF-8) ===
+    const guardarSesion = (sessionToken: string, rolForzado: any) => {
+        try {
+            const partes = sessionToken.split('.');
+            if (partes.length === 3) {
+                const base64 = partes[1];
+                const binaryStr = atob(base64);
+                const bytes = new Uint8Array(binaryStr.length);
+                for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+                const payload = JSON.parse(new TextDecoder().decode(bytes));
+                
+                // CORRECCIÓN CRÍTICA: Si venimos de seleccionar un rol, usamos ESE rol, no el del JWT
+                const rolFinal = (rolForzado && rolForzado.codigo) ? rolForzado : payload.rol;
+
+                const user: User = { id: payload.id, cedula: payload.cedula, nombres: payload.nombres, apellidos: payload.apellidos, rol: rolFinal };
+                localStorage.setItem('siga_token', sessionToken);
+                localStorage.setItem('siga_user', JSON.stringify(user));
+                setAuth({ user, isAuthenticated: true, loading: false, step: 'autenticado', rolesDisponibles: [], nombreCompleto: null, dispositivoNuevo: false, error: null, token: null });
+                window.location.href = '/';
+                return;
+            }
+        } catch { /* fallback */ }
+        localStorage.setItem('siga_token', sessionToken);
+        setAuth(prev => ({ ...prev, isAuthenticated: true, step: 'autenticado' }));
+        window.location.href = '/';
+    };
+    // === Logout: limpia TODO y recarga ===
+    const logout = () => {
+        localStorage.clear();
+        window.location.href = '/login';
+    };
+
+    // === Cancelar token en servidor ===
+    const cancelarTokenServidor = async (t: string) => {
+        try { await fetch(`${API}/api/login/cancelar`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: t }) }); } catch { /* ignorar */ }
+    };
+
+    // === PASO 1: Verificar cédula ===
+    const verificarCedula = async (cedula: string) => {
+        setAuth(prev => ({ ...prev, loading: true, error: null }));
+        try {
+            const resp = await fetch(`${API}/api/login/cedula`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cedula }) });
+            const data = await resp.json();
+            if (!data.ok) { setAuth(prev => ({ ...prev, loading: false, error: data.msg })); return; }
+            setAuth(prev => ({ ...prev, loading: false, step: 'password', token: data.token, nombreCompleto: data.nombreCompleto, rolesDisponibles: [], dispositivoNuevo: false }));
+        } catch { setAuth(prev => ({ ...prev, loading: false, error: 'Error de conexión con el servidor' })); }
+    };
+
+    // === PASO 2: Verificar contraseña ===
+    const verificarContrasena = async (password: string) => {
+        if (!auth.token) return;
+        setAuth(prev => ({ ...prev, loading: true, error: null }));
+        try {
+            const fp = getDeviceFingerprint();
+            const resp = await fetch(`${API}/api/login/contrasena`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: auth.token, contrasena: password, fingerprint: fp, navegador: navigator.userAgent.substring(0, 200), pantalla: `${screen.width}x${screen.height}` }) });
+            const data = await resp.json();
+            if (!data.ok) { if (data.code === 'DISPOSITIVO_NO_AUTORIZADO') { setAuth(prev => ({ ...prev, loading: false, step: 'dispositivo_bloqueado' })); } else { setAuth(prev => ({ ...prev, loading: false, error: data.msg })); } return; }
+            if (data.redirigir && data.rol) { guardarSesion(data.sessionToken, data.rol); }
+            else if (data.roles) { setAuth(prev => ({ ...prev, loading: false, step: 'seleccion_rol', rolesDisponibles: data.roles, dispositivoNuevo: data.dispositivoNuevo || false })); }
+        } catch { setAuth(prev => ({ ...prev, loading: false, error: 'Error de conexión con el servidor' })); }
+    };
+
+    // === PASO 3: Seleccionar rol ===
+    const seleccionarRol = async (rol: RolAsignado) => {
+        if (!auth.token) return;
+        setAuth(prev => ({ ...prev, loading: true, error: null }));
+        try {
+            const resp = await fetch(`${API}/api/login/rol`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: auth.token, asignacionId: rol.asignacion_id }) });
+            const data = await resp.json();
+            if (!data.ok) { setAuth(prev => ({ ...prev, loading: false, error: data.msg })); return; }
+            
+            // Forzamos el rol que el usuario eligió en la pantalla para evitar que el JWT traiga el rol principal erróneo
+            const rolElegido = {
+                codigo: rol.codigo || data.rol?.codigo || (rol.nombre || '').toLowerCase(),
+                nombre: rol.nombre || data.rol?.nombre || '',
+                etiqueta: rol.etiqueta || data.rol?.etiqueta || '',
+                icono: rol.icono || data.rol?.icono || '',
+                color: rol.color || data.rol?.color || '',
+                ruta: data.rol?.ruta || '/',
+                grado_elegido: rol.grado_elegido || data.rol?.grado_elegido || null,
+                materia_elegida: rol.materia_elegida || data.rol?.materia_elegida || null
+            };
+            
+            guardarSesion(data.sessionToken, rolElegido);
+        } catch { setAuth(prev => ({ ...prev, loading: false, error: 'Error de conexión con el servidor' })); }
+    };
+    // === Volver al inicio ===
+    const volver = async () => {
+        if (auth.token) await cancelarTokenServidor(auth.token);
+        setAuth({ user: null, isAuthenticated: false, loading: false, step: 'idle', rolesDisponibles: [], nombreCompleto: null, dispositivoNuevo: false, error: null, token: null });
+    };
+
+    return { ...auth, verificarCedula, verificarContrasena, seleccionarRol, volver, logout };
+}

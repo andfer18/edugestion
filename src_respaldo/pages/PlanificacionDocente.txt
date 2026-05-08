@@ -1,0 +1,318 @@
+import { useState, useEffect } from 'react';
+import { 
+  Save, Send, Plus, Trash2, FileText, 
+  CheckCircle, AlertCircle, ArrowLeft,
+  BookOpen, Layers, Layout, ClipboardCheck
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Link, useNavigate } from 'react-router-dom';
+import { 
+  ROUTE_PATHS, Planificacion, PlanificacionContenido, 
+  PlanificacionEvaluacion, Usuario, GRADOS_SECUNDARIA 
+} from '@/lib/index';
+import { docentes, materias, momentosAcademicos } from '@/data/index';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+
+export default function PlanificacionDocente({ user }: { user?: Usuario }) {
+  const navigate = useNavigate();
+  const effectiveUser = user || { id: 'u1', rol: 'docente', docenteId: 'd-af' };
+  const isDocente = effectiveUser.rol === 'docente';
+  const docente = isDocente ? docentes.find(d => d.id === effectiveUser.docenteId) : null;
+  const defaultAsignacion = docente?.asignaciones?.[0];
+
+  const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Form State
+  const [plan, setPlan] = useState<Partial<Planificacion>>({
+    docenteId: docente?.id,
+    materiaId: defaultAsignacion?.materiaId || 'm-ca',
+    gradoId: defaultAsignacion?.grado || '1er Año',
+    secciones: defaultAsignacion?.secciones || [],
+    momento: 1,
+    periodo: '2024-2025',
+    peic: '',
+    temaIndispensable: '',
+    temaGenerador: '',
+    contenidos: [
+      { tejidoTematico: '', conceptualizacion: '', referentesTeoricos: '', competencias: '', estrategiasMetodologicas: '', recursos: '' }
+    ],
+    evaluaciones: [
+      { estrategia: '', instrumento: '', prueba: '', criterios: '' }
+    ],
+    estado: 'borrador',
+    titulo: 'Planificación de Momento'
+  });
+
+  const addContenido = () => {
+    setPlan(prev => ({
+      ...prev,
+      contenidos: [...(prev.contenidos || []), { tejidoTematico: '', conceptualizacion: '', referentesTeoricos: '', competencias: '', estrategiasMetodologicas: '', recursos: '' }]
+    }));
+  };
+
+  const removeContenido = (index: number) => {
+    setPlan(prev => ({
+      ...prev,
+      contenidos: (prev.contenidos || []).filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateContenido = (index: number, field: keyof PlanificacionContenido, value: string) => {
+    const newContenidos = [...(plan.contenidos || [])];
+    newContenidos[index] = { ...newContenidos[index], [field]: value };
+    setPlan({ ...plan, contenidos: newContenidos });
+  };
+
+  const addEvaluacion = () => {
+    setPlan(prev => ({
+      ...prev,
+      evaluaciones: [...(prev.evaluaciones || []), { estrategia: '', instrumento: '', prueba: '', criterios: '' }]
+    }));
+  };
+
+  const removeEvaluacion = (index: number) => {
+    setPlan(prev => ({
+      ...prev,
+      evaluaciones: (prev.evaluaciones || []).filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateEvaluacion = (index: number, field: keyof PlanificacionEvaluacion, value: string) => {
+    const newEvals = [...(plan.evaluaciones || [])];
+    newEvals[index] = { ...newEvals[index], [field]: value };
+    setPlan({ ...plan, evaluaciones: newEvals });
+  };
+
+  const handleSave = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setSaved(true);
+      setLoading(false);
+      setTimeout(() => setSaved(false), 3000);
+    }, 1000);
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 p-4 md:p-8 max-w-[1600px] mx-auto pb-24 font-sans">
+      
+      {/* Header Estilo Institucional */}
+      <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 mb-8 shadow-sm border-b-[8px] md:border-b-[12px] border-primary flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+        <div className="flex items-center gap-4 md:gap-6 w-full lg:w-auto">
+          <button onClick={() => navigate(-1)} className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-slate-900 hover:text-white transition-all shrink-0">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div className="min-w-0">
+            <h1 className="text-xl md:text-4xl font-black text-slate-900 uppercase tracking-tighter italic leading-none truncate">Planificación de Clases</h1>
+            <p className="text-[9px] font-bold text-blue-700 uppercase tracking-[0.2em] mt-2 md:mt-3 truncate">Complejo Educativo La Paz • Formato Oficial MPPE</p>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+          <button 
+            onClick={handleSave}
+            disabled={loading}
+            className="w-full sm:w-auto siga-btn-dark flex items-center justify-center gap-2 px-6 py-4"
+          >
+            <Save className="w-4 h-4" /> {loading ? 'Guardando...' : 'Guardar Borrador'}
+          </button>
+          <button 
+            className="w-full sm:w-auto siga-btn-primary flex items-center justify-center gap-2 px-6 py-4"
+          >
+            <Send className="w-4 h-4" /> Enviar a Coordinación
+          </button>
+        </div>
+      </div>
+
+
+      {saved && (
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="bg-emerald-50 border-2 border-emerald-100 rounded-2xl p-4 mb-8 flex items-center gap-3 shadow-sm">
+          <CheckCircle className="w-5 h-5 text-emerald-600" />
+          <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Planificación guardada con éxito en la base de datos.</p>
+        </motion.div>
+      )}
+
+      {/* Información de Encabezado */}
+      <div className="bg-white rounded-[2rem] p-6 md:p-8 shadow-sm border border-slate-200 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="space-y-2">
+            <Label className="siga-label text-[9px]">Docente / C.I.</Label>
+            <div className="p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-black text-xs text-slate-600 uppercase">
+              {docente?.apellido}, {docente?.nombre} • {docente?.cedula}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label className="siga-label text-[9px]">Área de Formación</Label>
+            <Select value={plan.materiaId} onValueChange={v => setPlan({...plan, materiaId: v})}>
+              <SelectTrigger className="siga-input bg-white"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {materias.map(m => <SelectItem key={m.id} value={m.id}>{m.nombre}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label className="siga-label text-[9px]">Año / Grado</Label>
+            <Select value={plan.gradoId} onValueChange={v => setPlan({...plan, gradoId: v})}>
+              <SelectTrigger className="siga-input bg-white"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {GRADOS_SECUNDARIA.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label className="siga-label text-[9px]">Momento / Periodo</Label>
+            <div className="flex gap-2">
+              <Select value={String(plan.momento)} onValueChange={v => setPlan({...plan, momento: Number(v)})}>
+                <SelectTrigger className="flex-1 siga-input bg-white"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1° Momento</SelectItem>
+                  <SelectItem value="2">2° Momento</SelectItem>
+                  <SelectItem value="3">3° Momento</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="w-24 p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-black text-[10px] text-center text-slate-500">24-25</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 pt-8 border-t border-slate-100">
+          <div className="space-y-2">
+            <Label className="siga-label text-[9px] text-primary">P.E.I.C. (Proyecto Comunitario)</Label>
+            <textarea 
+              value={plan.peic} onChange={e => setPlan({...plan, peic: e.target.value})}
+              className="w-full min-h-[80px] p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold text-xs outline-none focus:border-primary transition-all resize-none"
+              placeholder="Describa el PEIC institucional..."
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="siga-label text-[9px] text-blue-600">Tema Indispensable</Label>
+            <textarea 
+              value={plan.temaIndispensable} onChange={e => setPlan({...plan, temaIndispensable: e.target.value})}
+              className="w-full min-h-[80px] p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold text-xs outline-none focus:border-primary transition-all resize-none"
+              placeholder="Ej: Preservación de la vida en el planeta..."
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="siga-label text-[9px] text-orange-600">Tema Generador</Label>
+            <textarea 
+              value={plan.temaGenerador} onChange={e => setPlan({...plan, temaGenerador: e.target.value})}
+              className="w-full min-h-[80px] p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold text-xs outline-none focus:border-primary transition-all resize-none"
+              placeholder="Ej: El agua como recurso vital..."
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Tabla de Tejido Temático y Contenidos */}
+      <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden mb-8">
+        <div className="px-8 py-5 bg-slate-900 flex justify-between items-center">
+          <h3 className="font-black text-white uppercase italic tracking-tighter text-sm flex items-center gap-3">
+            <Layers className="w-5 h-5 text-blue-400" /> Desarrollo de Tejido Temático
+          </h3>
+          <button onClick={addContenido} className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl font-black text-[9px] uppercase tracking-widest transition-all">
+            + Agregar Fila
+          </button>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[1200px]">
+            <thead className="bg-slate-50 border-b-2 border-slate-100">
+              <tr>
+                <th className="px-4 py-4 siga-label w-12 text-center">#</th>
+                <th className="px-4 py-4 siga-label">Tejido Temático</th>
+                <th className="px-4 py-4 siga-label">Conceptualización</th>
+                <th className="px-4 py-4 siga-label">Referentes T-P</th>
+                <th className="px-4 py-4 siga-label">Competencias</th>
+                <th className="px-4 py-4 siga-label">Estrategias</th>
+                <th className="px-4 py-4 siga-label">Recursos</th>
+                <th className="px-4 py-4 siga-label w-12"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {plan.contenidos?.map((item, i) => (
+                <tr key={i} className="hover:bg-slate-50/50 transition-colors">
+                  <td className="px-4 py-3 font-mono font-black text-slate-300 text-xs text-center">{i + 1}</td>
+                  {[
+                    { f: 'tejidoTematico', p: 'Tejido...' },
+                    { f: 'conceptualizacion', p: 'Unidad...' },
+                    { f: 'referentesTeoricos', p: 'Contenidos...' },
+                    { f: 'competencias', p: 'A evaluar...' },
+                    { f: 'estrategiasMetodologicas', p: 'Metodología...' },
+                    { f: 'recursos', p: 'Medios...' }
+                  ].map(field => (
+                    <td key={field.f} className="px-2 py-3">
+                      <textarea 
+                        value={(item as any)[field.f]} 
+                        onChange={e => updateContenido(i, field.f as any, e.target.value)}
+                        className="w-full min-h-[60px] p-3 bg-white border-2 border-slate-100 rounded-xl font-bold text-[10px] outline-none focus:border-primary transition-all resize-none"
+                        placeholder={field.p}
+                      />
+                    </td>
+                  ))}
+                  <td className="px-4 py-3 text-center">
+                    <button onClick={() => removeContenido(i)} className="p-2 text-slate-300 hover:text-red-500 transition-colors">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Sección de Estrategias de Evaluación */}
+      <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 overflow-hidden">
+        <div className="px-8 py-5 bg-orange-600 flex justify-between items-center">
+          <h3 className="font-black text-white uppercase italic tracking-tighter text-sm flex items-center gap-3">
+            <ClipboardCheck className="w-5 h-5" /> Plan de Evaluación Detallado
+          </h3>
+          <button onClick={addEvaluacion} className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl font-black text-[9px] uppercase tracking-widest transition-all">
+            + Agregar Evaluación
+          </button>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[1000px]">
+            <thead className="bg-orange-50 border-b-2 border-orange-100">
+              <tr>
+                <th className="px-6 py-4 siga-label text-orange-800">Estrategias de Evaluación</th>
+                <th className="px-6 py-4 siga-label text-orange-800">Instrumentos</th>
+                <th className="px-6 py-4 siga-label text-orange-800">Pruebas</th>
+                <th className="px-6 py-4 siga-label text-orange-800">Criterios Cualitativos</th>
+                <th className="px-6 py-4 siga-label w-12"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {plan.evaluaciones?.map((ev, i) => (
+                <tr key={i} className="hover:bg-orange-50/20 transition-colors">
+                  {[
+                    { f: 'estrategia', p: 'Técnica/Actividad...' },
+                    { f: 'instrumento', p: 'Escala/Lista...' },
+                    { f: 'prueba', p: 'Tipo de prueba...' },
+                    { f: 'criterios', p: 'Rasgos a observar...' }
+                  ].map(field => (
+                    <td key={field.f} className="px-4 py-4">
+                      <textarea 
+                        value={(ev as any)[field.f]} 
+                        onChange={e => updateEvaluacion(i, field.f as any, e.target.value)}
+                        className="w-full min-h-[60px] p-3 bg-white border-2 border-orange-50 rounded-xl font-bold text-[10px] outline-none focus:border-orange-500 transition-all resize-none"
+                        placeholder={field.p}
+                      />
+                    </td>
+                  ))}
+                  <td className="px-6 py-4 text-center">
+                    <button onClick={() => removeEvaluacion(i)} className="p-2 text-orange-200 hover:text-red-500 transition-colors">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  );
+}

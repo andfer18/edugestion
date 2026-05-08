@@ -1,0 +1,26 @@
+=== ESTADO DEL PROYECTO EDUGESTION_SIGA ===
+Sistema: React (Vite) + Node.js + MariaDB. Corriendo en red local: 192.168.10.3 (Front: 8080, Back: 3000).
+
+FASE 1 (COMPLETADA): Se importaron 1438 notas reales desde un Excel de formato compacto a la BD usando un script SQL complejo que extrae de 2 en 2, mapea por grado (1er a 5to año) y aplica la regla MPPE de la "I" (Inasistente). Tabla afectada: `calificaciones` (campos: definitiva, estado='NORMAL' o 'INASISTENTE').
+
+FASE 2 (COMPLETADA): Red local configurada. El sistema funciona desde el celular (http://192.168.10.3:8080). El middleware de validación por fingerprint en server.js está temporalmente desactivado con `let dispositivoNuevo = false;` en la ruta `/api/login/contrasena`.
+
+ARREGLOS CRÍTICOS HECHOS:
+1. Tabla `asignaturas` tenía `grado_id` apuntando a ids viejos (1,2,3). Se actualizó a los reales (16,17,18,19,20).
+2. Tabla `estudiantes` NO tiene grado_id ni seccion_id. Se obtienen via JOIN con `inscripciones` y `secciones`. Ya corregido en `/api/estudiantes/:grado/:seccion`.
+3. Archivo `Estudiantes.tsx` blindado con Optional Chaining (`?.`) porque los datos reales no traían el objeto `representante`.
+
+=== PRÓXIMO PASO: FASE 3 (Vista Filtrada del Docente) ===
+OBJETIVO: Que el docente al hacer clic en "Ver mi Matrícula" vea SOLO sus alumnos asignados, no toda la escuela.
+
+BACKEND DISPONIBLE:
+- GET `/api/docente/asignaciones/:cedula` (Devuelve: grado, seccion, materia de la tabla `personal`).
+- GET `/api/estudiantes/:grado/:seccion` (Devuelve la nómina, ya arreglada con inscripciones).
+
+TAREAS PENDIENTES:
+1. Crear componente `src/pages/MiMatricula.tsx`.
+2. Pasar la cédula del docente logueado a ese componente (viene en el token/estado de React).
+3. Hacer fetch a sus asignaciones.
+4. Hacer fetch a los estudiantes de esas secciones.
+5. Pintar una tabla simple y responsiva (para celular).
+6. En `App.tsx`, cambiar la ruta `/docente/estudiantes` para que cargue `MiMatricula` en lugar de `Estudiantes`.
