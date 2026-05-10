@@ -1,3 +1,113 @@
+# ============================================================
+# GUÍA COMPLETA DE CAMBIOS - EDUGESTION SIGA
+# ============================================================
+# Sigue estos pasos en orden para aplicar todos los cambios
+# ============================================================
+
+## PASO 1: ACTUALIZAR BASE DE DATOS (MariaDB)
+
+Abre una terminal MySQL y ejecuta:
+
+```sql
+-- Ejecuta cada bloque por separado
+
+-- 1. Cambiar tipo de columna para permitir nuevos roles
+ALTER TABLE personal MODIFY COLUMN tipo VARCHAR(50) NOT NULL DEFAULT 'docente';
+
+-- 2. Actualizar tipo de personal según corresponda
+UPDATE personal SET tipo = 'DOCENTE' WHERE materia_especialidad IS NOT NULL AND materia_especialidad != '';
+UPDATE personal SET tipo = 'ADMINISTRATIVO' WHERE tipo = 'administrativo';
+
+-- 3. Actualizar Lisbeth Bastidas como Subdirectora
+UPDATE personal
+SET tipo = 'ADMINISTRATIVO',
+    cargo = 'SUBDIRECTORA ACADEMICA',
+    grado_asignado = NULL,
+    seccion_asignada = NULL,
+    materia_especialidad = NULL
+WHERE cedula = '9734976';
+
+-- 4. Verificar
+SELECT cedula, nombres, apellidos, tipo, cargo FROM personal WHERE cedula = '9734976';
+```
+
+## PASO 2: CREAR TABLAS SEPARADAS PARA ROLES (Opcional pero recomendado)
+
+```sql
+-- Crea las tablas separadas para mejor organización
+
+-- Tabla de Docentes
+CREATE TABLE IF NOT EXISTS personal_docente (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    cedula VARCHAR(20) UNIQUE NOT NULL,
+    nombres VARCHAR(150) NOT NULL,
+    apellidos VARCHAR(150) NOT NULL,
+    materia_especialidad VARCHAR(150),
+    telefono VARCHAR(50),
+    email VARCHAR(150),
+    estado ENUM('activo', 'inactivo') DEFAULT 'activo',
+    FOREIGN KEY (cedula) REFERENCES personal(cedula) ON DELETE CASCADE
+);
+
+-- Tabla de Directivos
+CREATE TABLE IF NOT EXISTS directivos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    cedula VARCHAR(20) UNIQUE NOT NULL,
+    nombres VARCHAR(150) NOT NULL,
+    apellidos VARCHAR(150) NOT NULL,
+    cargo ENUM('DIRECTOR', 'SUBDIRECTOR', 'COORDINADOR') NOT NULL,
+    area VARCHAR(100),
+    estado ENUM('activo', 'inactivo') DEFAULT 'activo',
+    FOREIGN KEY (cedula) REFERENCES personal(cedula) ON DELETE CASCADE
+);
+
+-- Tabla de Administrativos
+CREATE TABLE IF NOT EXISTS administrativos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    cedula VARCHAR(20) UNIQUE NOT NULL,
+    nombres VARCHAR(150) NOT NULL,
+    apellidos VARCHAR(150) NOT NULL,
+    cargo ENUM('SECRETARIA', 'OBRERO', 'OTRO') NOT NULL,
+    area_atencion VARCHAR(100),
+    estado ENUM('activo', 'inactivo') DEFAULT 'activo',
+    FOREIGN KEY (cedula) REFERENCES personal(cedula) ON DELETE CASCADE
+);
+
+-- Insertar datos organizados
+-- Docentes
+INSERT INTO personal_docente (cedula, nombres, apellidos, materia_especialidad)
+SELECT cedula, nombres, apellidos, materia_especialidad
+FROM personal
+WHERE materia_especialidad IS NOT NULL
+  AND materia_especialidad != ''
+  AND materia_especialidad NOT LIKE '%SUBDIRECTOR%'
+  AND materia_especialidad NOT LIKE '%SECRETAR%'
+  AND materia_especialidad NOT LIKE '%DIRECTOR%';
+
+-- Lisbeth Bastidas como Subdirectora
+INSERT INTO directivos (cedula, nombres, apellidos, cargo, area)
+SELECT cedula, nombres, apellidos, 'SUBDIRECTOR', 'ACADEMICO'
+FROM personal WHERE cedula = '9734976';
+
+-- Secretarias
+INSERT INTO administrativos (cedula, nombres, apellidos, cargo, area_atencion)
+SELECT cedula, nombres, apellidos, 'SECRETARIA', COALESCE(area_atencion, 'SECRETARIA')
+FROM personal
+WHERE tipo = 'administrativo' OR LOWER(cargo) LIKE '%secretar%';
+
+-- Verificar
+SELECT 'DOCENTES' AS tipo, COUNT(*) AS cantidad FROM personal_docente
+UNION ALL SELECT 'DIRECTIVOS', COUNT(*) FROM directivos
+UNION ALL SELECT 'ADMINISTRATIVOS', COUNT(*) FROM administrativos;
+```
+
+## PASO 3: ACTUALIZAR ARCHIVOS DEL PROYECTO
+
+### Archivo 1: src/pages/AsignacionDocentes.tsx
+
+Reemplaza TODO el archivo con este contenido:
+
+```typescript
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -55,7 +165,7 @@ const MATERIA_DICT: Record<string, { oficial: string, alias: string[] }> = {
   'CA': { oficial: 'CASTELLANO', alias: ['CASTELLANO Y LITERATURA', 'LENGUA CASTELLANA', 'CASTY LIT'] },
   'IO': { oficial: 'INGLES Y OTRAS LENGUAS EXTRANJERAS', alias: ['INGLES', 'INGLÉS', 'IDIOMA EXTRANJERO'] },
   'MA': { oficial: 'MATEMATICAS', alias: ['MATEMATICA', 'MAT', 'MATEM'] },
-  'EF': { oficial: 'EDUCACION FISICA', alias: ['EDF', 'ED.FISICA', 'EDUCACIÓN FISICA'] },
+  'EF': { oficial: 'EDUCACION FISICA', alias: ['EDF', 'ED.FISICA', 'EDUCACIÓN FÍSICA'] },
   'AP': { oficial: 'ARTE Y PATRIMONIO', alias: ['AP', 'ARTE', 'EDUCACION ARTISTICA', 'ARTES'] },
   'CN': { oficial: 'CIENCIAS NATURALES', alias: ['CIENCIAS NATURAL', 'CIENCIAS', 'CIEN NAT'] },
   'GH': { oficial: 'GEOGRAFIA, HISTORIA Y CIUDADANIA', alias: ['GHC', 'GEOGRAFIA E HISTORIA', 'HISTORIA', 'GEOGRAFÍA, HISTORIA Y CIUDADANÍA'] },
@@ -157,28 +267,16 @@ export default function AsignacionDocentes() {
   const materiasAsignadasCodigos = asignaciones.map((a: any) => a.materia_codigo);
   const materiasDisponibles = materiasGrado.filter(m => !materiasAsignadasCodigos.includes(m.codigo));
 
-    // Filtrar docentes por la materia seleccionada
   const docentesFiltrados = formData.materiaCodigo
     ? docentes.filter(d => {
         const espDocente = (d.materia_especialidad || '').toUpperCase().trim();
-
-        // Si el docente no tiene especialidad, no se muestra
         if (!espDocente) return false;
-
         const dictEntry = MATERIA_DICT[formData.materiaCodigo];
         if (!dictEntry) return false;
-
-        // Buscar coincidencia EXACTA con el nombre oficial primero
-        if (espDocente === dictEntry.oficial) {
-          return true;
-        }
-
-        // Luego buscar en los alias - solo coincidencias exactas
-        const match = dictEntry.alias.some(alias =>
-          espDocente === alias.toUpperCase()
+        const terminosABuscar = [dictEntry.oficial, ...dictEntry.alias];
+        return terminosABuscar.some(termino =>
+          espDocente === termino || espDocente.includes(termino) || termino.includes(espDocente)
         );
-
-        return match;
       })
     : [];
 
@@ -336,3 +434,43 @@ export default function AsignacionDocentes() {
     </div>
   );
 }
+```
+
+## PASO 4: VERIFICAR CAMBIOS
+
+1. Reinicia el frontend: `npm run dev`
+2. Abre http://localhost:8080
+3. Ve a Asignación de Docentes
+4. En la consola del navegador deberías ver:
+   - `🔍 Token presente: true`
+   - `✅ Total docentes cargados: XX`
+   - `📋 Docentes con especialidad: XX`
+
+## PROBLEMAS COMUNES Y SOLUCIONES
+
+### Problema: ERR_CONNECTION_REFUSED
+**Causa**: El backend no está corriendo
+**Solución**: En otra terminal ejecuta:
+```bash
+cd backend
+node server.js
+```
+
+### Problema: Token presente pero no carga docentes
+**Causa**: La API /api/personal no existe o hay error en la consulta
+**Solución**: Verifica que el backend muestre:
+```
+🚀 Servidor API corriendo en http://localhost:3000
+```
+
+### Verificar conexión manual:
+```bash
+# En otra terminal ejecuta:
+curl http://localhost:3000/api/personal -H "Authorization: Bearer $(cat ~/.siga_token 2>/dev/null || echo 'tu_token_aqui')"
+```
+
+## ARCHIVOS ACTUALIZADOS EN ESTE PAQUETE
+
+1. `AsignacionDocentes.tsx` - Componente actualizado con mejor manejo de conexión
+2. `migracion_roles_separados.sql` - Script para separar roles en tablas
+3. `fix_tipo_subdirectora.sql` - Script para actualizar tipo de Lisbeth Bastidas

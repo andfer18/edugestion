@@ -1,0 +1,127 @@
++----------+------------+-------------+---------------------------+
+| cedula   | nombres    | apellidos   | materia_especialidad      |
++----------+------------+-------------+---------------------------+
+| 14736564 | IREN       | SANCHEZ     | NULL                      |
+| 14833231 | LISBEIRA   | PEREZ       | NULL                      |
+| 14921932 | GREGORIA   | OLIVEROS    | NULL                      |
+| 15261662 | YITZELY    | BERMUDEZ    | NULL                      |
+| 15411774 | ODRIS      | FERNANDEZ   | NULL                      |
+| 16559945 | YUSMARY    | OLIVEROS    | NULL                      |
+| 16561760 | DIANA      | BALZAN      | NULL                      |
+| 17099313 | JULIO      | GONZALEZ    | NULL                      |
+| 17565199 | NARIANIS   | ZAMBRANO    | NULL                      |
+| 18429953 | STALIN     | FERNANDEZ   | NULL                      |
+| 19072831 | KEINY      | URDANETA    | NULL                      |
+| 19810118 | EVELANJE   | MORENO      | NULL                      |
+| 19810688 | KATHERINE  | URDANETA    | NULL                      |
+| 19811115 | MAIKELYN   | CARABALLO   | NULL                      |
+| 21228268 | CLAURYS    | FERNANDEZ   | NULL                      |
+| 22152794 | ANA        | MORALES     | NULL                      |
+| 23770217 | EURO       | PULGAR      | NULL                      |
+| 25039662 | GISELY     | ACOSTA      | NULL                      |
+| 26169240 | RAILYS     | RODRIGUEZ   | NULL                      |
+| 5828954  | GERMAN     | MATOS       | NULL                      |
+| 9766606  | EDWARD     | NAVA        | NULL                      |
+| 15559024 | DERVIS     | ROJAS       | NULL                      |
+| 30299299 | ANGEL      | FINOL       | NULL                      |
+| 25883040 | EDILIMAR   | MONTEL      | NULL                      |
+| 16298584 | YENNY      | GONZALEZ    | NULL                      |
+| 9736720  | FRANCISCO  | GONZALEZ    | NULL                      |
+| 18704774 | GENISIS    | PULGAR      | NULL                      |
+| 18312127 | CARLOS     | VALLES      | NULL                      |
+| 11294013 | ZULEMA     | PIRELA      | NULL                      |
+| 19645653 | ERICK      | ZABALETA    | NULL                      |
+| 14862697 | ADRIANA    | BRIÑEZ      | NULL                      |
+| 13371785 | ROSALINA   | RIVERA      | NULL                      |
+| 5038727  | MARIA      | ALFONSO     | NULL                      |
+| 10429590 | IRENE      | GONZALEZ    | NULL                      |
+| 11721189 | LISSETH    | MOLERO      | NULL                      |
+| 17636659 | ANA        | RIVERA      | NULL                      |
+| 18650581 | VIVIANA    | COLINA      | NULL                      |
+| 26093964 | ANGELIANIS | CASTILLO    | NULL                      |
+| 26743304 | ADRIANYS   | SUAREZ      | NULL                      |
+| 27998218 | MARY       | BERRUETA    | NULL                      |
+| 31295304 | ANSELMO    | SALAS       | NULL                      |
+| 10409425 | BARBARA    | URDANETA    | NULL                      |
+| 10432645 | CARMEN     | PULGAR      | NULL                      |
+| 12513742 | MILENYS    | MOLERO      | NULL                      |
+| 14208547 | NOELIS     | CHAVEZ      | NULL                      |
+| 16687079 | YULYANA    | GONZALEZ    | NULL                      |
+| 16835698 | NELLY      | BERRUETA    | NULL                      |
+| 18626390 | YASMILEY   | CARRASQUERO | NULL                      |
+| 18662109 | DANIELA    | VERA        | NULL                      |
+| 20072295 | MARIA      | MONTIEL     | NULL                      |
+| 21229360 | PELEY      | JULIETA     | NULL                      |
+| 6764577  | LEDYS      | MORENO      | NULL                      |
+| 6805719  | ESMEYRA    | URDANETA    | NULL                      |
+| 6805968  | YAJURE     | JESUS       | NULL                      |
+| 7708168  | ALIDA      | MORENO      | NULL                      |
+| 7788697  | ALI        | SALAS       | NULL                      |
+| 9721342  | LUIS       | ARRIETA     | NULL                      |
+| 9736756  | JULIO      | PERDOMO     | NULL                      |
+| 9741065  | DERVIS     | FUENMAYOR   | NULL                      |
+| 9753134  | MELIDA     | MAYOR       | NULL                      |
+| 9772693  | JOSE       | GOMEZ       | NULL                      |
+| 11297721 | DEIVIS     | MATOS       | NULL                      |
+| 11392199 | JOSE       | INCIARTE    | NULL                      |
+| 11607576 | BELKIS     | CARABALLO   | NULL                      |
+| 11876371 | CLARIBEL   | VILLASMIL   | NULL                      |
+| 12871310 | JIM        | FERNANDEZ   | NULL                      |
+| 13005173 | YURANY     | FUENMAYOR   | NULL                      |
+| 13005174 | ANA        | RAMIREZ     | NULL                      |
+| 13005181 | BELKIS     | URDANETA    | NULL                      |
+| 13005763 | YANURY     | VILLALOBOS  | NULL                      |
+| 13829829 | CARMEN     | URDANETA    | NULL                      |
+| 14522355 | RAMON      | VALBUENA    | NULL                      |
+| 14545782 | YULIRBEL   | MAYOR       | NULL                      |
+| 19811692 | YOSSELYN   | LABARCA     | AP                        |
+| 23769887 | ELIANIS    | FERNANDEZ   | AP                        |
+| 14356535 | LILIAN     | GONZALEZ    | ARTE Y PATRIMONIO         |
+| 13628986 | CIRA       | VILLALOBOS  | BIOLOGIA                  |
+| 18662000 | NATHALY    | FERNANDEZ   | BIOLOGIA                  |
+| 20835056 | KATHERINE  | FERNANDEZ   | BIOLOGIA                  |
+| 19017548 | ELIANETH   | PULGAR      | CASTELLANO                |
+| 23770210 | ELIBERKI   | CASTRO      | CASTELLANO                |
+| 30863209 | DULCE      | URDANETA    | CASTELLANO                |
+| 31548688 | XAVIER     | BOSCAN      | CASTELLANO                |
+| 13002947 | YESENIA    | FUENMAYOR   | CASTELLANO                |
+| 19213252 | YULIMAR    | URDANETA    | CIENCIAS DE LA TIERRA     |
+| 20204606 | NEURO      | VALBUENA    | CIENCIAS DE LA TIERRA     |
+| 12327525 | YIDRIS     | FUENMAYOR   | CIENCIAS NATURALES        |
+| 13653621 | MARLYN     | SALAZAR     | EDUCACION FISICA          |
+| 11069450 | YUNEIDY    | PORTILLO    | EDUCACION FISICA          |
+| 17087025 | LISBETH    | OLLARVEZ    | EDUCACION FISICA          |
+| 17184804 | JARLIS     | VICUÑA      | EDUCACION FISICA          |
+| 29836341 | ANDRY      | MATUTE      | EDUCACION FISICA          |
+| 31024533 | YUREIBIS   | OLIVEROS    | EDUCACION FISICA          |
+| 24250410 | BAIVELIS   | URDANETA    | FISICA                    |
+| 12867906 | ANDRES     | FERNANDEZ   | FISICA                    |
+| 24250015 | IRISMEL    | GONZALEZ    | FISICA                    |
+| 18662175 | JOSE       | URDANETA    | FS                        |
+| 9734976  | LISBETH    | BASTIDAS    | GHC                       |
+| 17565191 | CARLOS     | RINCON      | GHC                       |
+| 17565610 | MARILU     | URDANETA    | GHC                       |
+| 17634611 | DANIFER    | CHAVEZ      | GHC                       |
+| 18384543 | DISKEILA   | ROMERO      | GHC                       |
+| 20147982 | HENGLIS    | BASTIDAS    | GHC                       |
+| 14137464 | EDWAR      | MARIN       | INGLES                    |
+| 23466327 | ALEJANDRA  | FERRER      | INGLES                    |
+| 29902949 | JIOVANDRI  | FUENMAYOR   | INGLES                    |
+| 30089498 | JOSE       | NEGRETTE    | INGLES                    |
+| 25596496 | ELVIS      | MATOS       | MATEMATICAS               |
+| 17566853 | JAIKLIN    | VASQUEZ     | MATEMATICAS               |
+| 10405790 | ARCELIA    | RODRIGUEZ   | MATEMATICAS               |
+| 12867704 | GLEN       | VILLALOBOS  | MATEMATICAS               |
+| 18662136 | ALBERTO    | VAZQUEZ     | MATEMATICAS               |
+| 19211028 | ANDRES     | VALLES      | MATEMATICAS               |
+| 17833718 | ANGELINA   | FUENMAYOR   | ORIENTACION Y CONVIVENCIA |
+| 9770174  | MARITZA    | CHAVEZ      | ORIENTACION Y CONVIVENCIA |
+| 10432180 | YASNITH    | PADRON      | ORIENTACION Y CONVIVENCIA |
+| 9510626  | JANETH     | RIVERO      | PGCRP                     |
+| 9743297  | ROGER      | RIVERO      | PGCRP                     |
+| 20685013 | JARIAGNI   | CHAVEZ      | PGCRP                     |
+| 25763504 | ANGEL      | QUINTERO    | PGCRP                     |
+| 13005137 | NERIO      | TERAN       | QUIMICA                   |
+| 17634574 | MAIRELY    | FUENMAYOR   | QUIMICA                   |
+| 31070093 | DAIMERY    | PORTILLO    | QUIMICA                   |
++----------+------------+-------------+---------------------------+

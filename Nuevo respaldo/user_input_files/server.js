@@ -409,29 +409,11 @@ app.post('/api/asignaciones-docentes', async (req, res) => {
 });
 
 app.get('/api/asignaciones-docentes', async (req, res) => {
-  const { grado_id, seccion } = req.query;
-
-  console.log('📋 GET /api/asignaciones-docentes');
-  console.log('   Params:', { grado_id, seccion });
-
+  const { periodo_id, grado_id, seccion } = req.query;
   try {
-    const periodo_id = await getPeriodoActivo();
-    console.log('   Periodo activo:', periodo_id);
-
-    const [rows] = await pool.query(
-      `SELECT ad.*, p.nombres, p.apellidos
-       FROM asignaciones_docentes ad
-       LEFT JOIN personal p ON ad.personal_cedula = p.cedula
-       WHERE ad.periodo_id = ? AND ad.grado_id = ? AND ad.seccion = ?`,
-      [periodo_id, grado_id, seccion]
-    );
-
-    console.log('   Asignaciones encontradas:', rows.length);
+    const [rows] = await pool.query('SELECT * FROM asignaciones_docentes WHERE periodo_id = ? AND grado_id = ? AND seccion = ?', [periodo_id, grado_id, seccion]);
     res.json(rows);
-  } catch (error) {
-    console.error('Error al obtener asignaciones:', error);
-    res.status(500).json({ error: 'Error al obtener asignaciones' });
-  }
+  } catch (error) { res.status(500).json({ error: 'Error' }); }
 });
 
 // ============================================
@@ -476,50 +458,41 @@ app.get('/api/asignaciones-docentes', async (req, res) => {
 // RUTA: Asignar un docente individualmente
 app.post('/api/asignaciones-docentes/individual', async (req, res) => {
   const { grado_id, seccion, materia_codigo, docente_cedula } = req.body;
-
-  console.log('📝 POST /api/asignaciones-docentes/individual');
-  console.log('   Datos recibidos:', { grado_id, seccion, materia_codigo, docente_cedula });
-
   try {
     const periodo_id = await getPeriodoActivo();
-    console.log('   Periodo activo:', periodo_id);
-
+    
     // Verificar si ya existe una asignación para esta materia en esta sección
     const [existe] = await pool.query(
       'SELECT * FROM asignaciones_docentes WHERE periodo_id = ? AND grado_id = ? AND seccion = ? AND materia_codigo = ?',
       [periodo_id, grado_id, seccion, materia_codigo]
     );
-    console.log('   Ya existe?:', existe.length > 0 ? 'SÍ' : 'NO');
-
+    
     if (existe.length > 0) {
       // Si ya existe, actualizamos el docente
       await pool.query(
         'UPDATE asignaciones_docentes SET personal_cedula = ? WHERE periodo_id = ? AND grado_id = ? AND seccion = ? AND materia_codigo = ?',
         [docente_cedula, periodo_id, grado_id, seccion, materia_codigo]
       );
-      console.log('   ✅ Actualizado');
     } else {
       // Si no existe, lo insertamos
-      const [result] = await pool.query(
+      await pool.query(
         'INSERT INTO asignaciones_docentes (periodo_id, grado_id, seccion, materia_codigo, personal_cedula) VALUES (?, ?, ?, ?, ?)',
         [periodo_id, grado_id, seccion, materia_codigo, docente_cedula]
       );
-      console.log('   ✅ Insertado, ID:', result.insertId);
     }
 
     // Devolvemos el registro recién guardado con el JOIN del nombre del docente
     const [rowReturned] = await pool.query(
-      `SELECT ad.*, p.nombres, p.apellidos
-       FROM asignaciones_docentes ad
-       LEFT JOIN personal p ON ad.personal_cedula = p.cedula
+      `SELECT ad.*, p.nombres, p.apellidos 
+       FROM asignaciones_docentes ad 
+       LEFT JOIN personal p ON ad.personal_cedula = p.cedula 
        WHERE ad.periodo_id = ? AND ad.grado_id = ? AND ad.seccion = ? AND ad.materia_codigo = ?`,
       [periodo_id, grado_id, seccion, materia_codigo]
     );
-
-    console.log('   Respuesta:', rowReturned[0]);
+    
     res.json(rowReturned[0]);
   } catch (error) {
-    console.error('❌ ERROR AL ASIGNAR DOCENTE:', error);
+    console.error('❌ ERROR AL ASIGNAR DOCENTE:', error); // ¡ESTO NOS DIRÁ EL PROBLEMA REAL!
     res.status(500).json({ error: 'Error al asignar docente' });
   }
 });
@@ -735,18 +708,13 @@ const storageBoletin = multer.diskStorage({
 });
 const uploadBoletin = multer({ storage: storageBoletin });
 
-// MOTOR DEFINITIVO DE IMPORTACIÓN DE BOLETINES (Adaptado a Nóminas MPPE)
+// MOTOR DEFINITIVO DE IMPORTACIÓN DE BOLETINES
 app.post('/api/importar/boletin', uploadBoletin.single('archivo'), async (req, res) => {
   const conn = await pool.getConnection(); 
   try {
     if (!req.file) return res.status(400).json({ error: 'No se subió ningún archivo' });
 
     const periodo_id = await getPeriodoActivo();
-    
-    // 🚀 NUEVO: Recibimos el grado y sección por query params (ej: ?grado_id=16&seccion=A)
-    const queryGradoId = req.query.grado_id;
-    const querySeccion = req.query.seccion;
-    
     const workbook = XLSX.readFile(req.file.path);
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
@@ -755,28 +723,35 @@ app.post('/api/importar/boletin', uploadBoletin.single('archivo'), async (req, r
     if (jsonData.length === 0) return res.status(400).json({ error: 'El archivo está vacío' });
 
     const CODGRA_MAP = { '1F': 16, '2F': 17, '3F': 18, '4F': 19, '5F': 20 };
+    const MATERIAS_ORDEN = {
+      16: ['CA', 'IO', 'MA', 'EF', 'AP', 'CN', 'GH', 'OC', 'PG'], 
+      17: ['CA', 'IO', 'MA', 'EF', 'AP', 'CN', 'GH', 'OC', 'PG'],
+      18: ['CA', 'IO', 'MA', 'EF', 'FI', 'QU', 'BI', 'GH', 'OC', 'PG'], 
+      19: ['CA', 'IO', 'MA', 'EF', 'FI', 'QU', 'BI', 'GH', 'FS', 'OC', 'PG'], 
+      20: ['CA', 'IO', 'MA', 'EF', 'FI', 'QU', 'BI', 'CT', 'GH', 'FS', 'OC', 'PG'] 
+    };
     const MATERIA_NOMBRE = { 'CA': 'CASTELLANO', 'IO': 'INGLES Y OTRAS LENGUAS EXTRANJERAS', 'MA': 'MATEMATICAS', 'EF': 'EDUCACION FISICA', 'AP': 'ARTE Y PATRIMONIO', 'CN': 'CIENCIAS NATURALES', 'GH': 'GEOGRAFIA, HISTORIA Y CIUDADANIA', 'OC': 'ORIENTACION Y CONVIVENCIA', 'PG': 'PARTICIPACION EN GRUPOS DE CREACION, RECREACION Y PRODUCCION', 'FI': 'FISICA', 'QU': 'QUIMICA', 'BI': 'BIOLOGIA', 'FS': 'FORMACION PARA LA SOBERANIA NACIONAL', 'CT': 'CIENCIAS DE LA TIERRA' };
-    
+
     await conn.beginTransaction();
+
     let procesados = 0, ignorados = 0, noEncontrados = 0;
 
     for (const row of jsonData) {
       try {
-        // 1. DETECTAR GRADO Y SECCIÓN (Prioridad query params, luego columnas Excel)
         const codGra = String(row.CodGra || '').trim().toUpperCase();
-        let grado_id = CODGRA_MAP[codGra] || Number(queryGradoId); // Usa el de la URL si no hay columna
+        const grado_id = CODGRA_MAP[codGra];
         
-        let seccion = String(row.CodSec || '').trim();
-        if (!seccion) seccion = querySeccion; // Usa el de la URL si no hay columna
+        if (!grado_id) { ignorados++; continue; } 
 
-        if (!grado_id || !seccion) { ignorados++; continue; }
+        const seccion = String(row.CodSec || '').trim();
+        if (!seccion) { ignorados++; continue; }
 
-        // 2. BUSCAR ESTUDIANTE (Mapeando columnas del MPPE: "Nº Cedula", "Apellidos", "Nombres")
-        let cedulaRaw = String(row.CedAlu || row['Nº Cedula'] || '').trim(); // 🚀 LEE AMBAS COLUMNAS
-        if (!cedulaRaw || cedulaRaw === '*') { ignorados++; continue; } // Ignora filas vacías o totales
-        
+        // 🚀 LÓGICA MEJORADA CE / CI
+        let cedulaRaw = String(row.CedAlu || '').trim();
         let numericPart = cedulaRaw.replace(/[^0-9]/g, ''); 
+        
         let esCedulaEscolar = numericPart.length >= 11; 
+        
         let searchCedulas = [cedulaRaw];
         
         if (esCedulaEscolar) {
@@ -788,6 +763,7 @@ app.post('/api/importar/boletin', uploadBoletin.single('archivo'), async (req, r
           searchCedulas.push(cleanCI);
           searchCedulas.push(cleanCI.replace(/^0/, '')); 
         }
+        
         searchCedulas = [...new Set(searchCedulas.filter(c => c.length > 0))];
 
         let [estRows] = await conn.query(
@@ -795,11 +771,10 @@ app.post('/api/importar/boletin', uploadBoletin.single('archivo'), async (req, r
           [searchCedulas, searchCedulas]
         );
         
-        // 🚀 LEE "Apellidos" y "Nombres" si no encuentra por cédula
         if (estRows.length === 0) {
-          const apellidos = String(row.ApeAlu || row.Apellidos || '').trim().toUpperCase();
-          const nombres = String(row.NomAlu || row.Nombres || '').trim().toUpperCase();
-          if (apellidos && nombres && apellidos !== '*') {
+          const apellidos = String(row.ApeAlu || '').trim().toUpperCase();
+          const nombres = String(row.NomAlu || '').trim().toUpperCase();
+          if (apellidos && nombres) {
             const [nameRows] = await conn.query(
               "SELECT id, cedula, cedula_escolar FROM estudiantes WHERE UPPER(TRIM(apellidos)) = ? AND UPPER(TRIM(nombres)) LIKE ?", 
               [apellidos, `%${nombres}%`]
@@ -830,60 +805,75 @@ app.post('/api/importar/boletin', uploadBoletin.single('archivo'), async (req, r
           await conn.query('INSERT INTO inscripciones (estudiante_id, seccion_id, periodo_id, status) VALUES (?, ?, ?, ?)', [estudiante_id, seccion_id, periodo_id, 'ACTIVO']);
         }
 
-        // 4. PROCESAR NOTAS INDIVIDUALES DINÁMICAMENTE
+        // 4. PROCESAR NOTAS Y EVALUACIONES
+        const materias = MATERIAS_ORDEN[grado_id];
         const lapsos = [
-          { momento: 1, sufijo: '' },    // Columnas: CA, IO, MA...
-          { momento: 2, sufijo: '_1' }   // Columnas: CA_1, IO_1, MA_1...
+          { momento: 1, data: row.Lapso1 },
+          { momento: 2, data: row.Lapso2 },
+          { momento: 3, data: row.Lapso3 },
+          { momento: 0, data: row.NotaDef } 
         ];
 
         for (const lapso of lapsos) {
-          for (const codMat of Object.keys(MATERIA_NOMBRE)) {
-            const colName = `${codMat}${lapso.sufijo}`;
-            const notaRaw = row[colName];
+          if (!lapso.data) continue;
+          const strNotas = String(lapso.data).trim();
+          
+          const notas = [];
+          for (let i = 0; i < materias.length * 2; i += 2) {
+            const chunk = strNotas.substring(i, i + 2).trim();
+            if (chunk.toUpperCase() === 'EX') notas.push('EX');
+            else if (chunk === '' || chunk === '  ') notas.push('I');
+            else notas.push(chunk); 
+          }
 
-            // Si la columna no existe en el Excel o está vacía/asterisco, la saltamos
-            if (notaRaw === undefined || notaRaw === null || String(notaRaw).trim() === '' || String(notaRaw).trim() === '*') continue;
+          for (let j = 0; j < materias.length; j++) {
+            if (j >= notas.length) break;
+            const codMat = materias[j];
+            const notaValor = notas[j];
+            const nombreMat = MATERIA_NOMBRE[codMat] || codMat;
 
-            const notaStr = String(notaRaw).trim().toUpperCase();
-            const nombreMat = MATERIA_NOMBRE[codMat];
-            const docente_cedula = 'IMPORT_HIST';
-            
-            let [evalRows] = await conn.query(
-              'SELECT id FROM evaluaciones WHERE grado_id = ? AND seccion = ? AND materia = ? AND momento = ? AND tipo = ? AND periodo_id = ?',
-              [grado_id, seccion, nombreMat, lapso.momento, 'cuantitativa', periodo_id]
-            );
-
-            let evaluacion_id;
-            if (evalRows.length > 0) {
-              evaluacion_id = evalRows[0].id;
-            } else {
-              const [resEval] = await conn.query(
-                'INSERT INTO evaluaciones (docente_cedula, grado_id, seccion, materia, momento, nombre, tipo, puntaje_maximo, orden, periodo_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                [docente_cedula, grado_id, seccion, nombreMat, lapso.momento, `${nombreMat} L${lapso.momento}`, 'cuantitativa', 20, 1, periodo_id]
+            if (lapso.momento === 0) { 
+              const definitivo = parseFloat(notaValor);
+              const estatus = definitivo >= 9.50 ? 'APROBADO' : 'REPROBADO';
+              const tipo = definitivo >= 9.50 ? 'F' : null;
+              if (!isNaN(definitivo)) {
+                await conn.query(
+                  `INSERT INTO historial_academico (estudiante_id, grado_id, materia_codigo, periodo_id, definitiva, estatus, tipo_aprobacion) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE definitiva=VALUES(definitiva), estatus=VALUES(estatus)`,
+                  [estudiante_id, grado_id, codMat, periodo_id, definitivo, estatus, tipo]
+                );
+              }
+            } else { 
+              const docente_cedula = 'IMPORT_HIST';
+              
+              let [evalRows] = await conn.query(
+                'SELECT id FROM evaluaciones WHERE grado_id = ? AND seccion = ? AND materia = ? AND momento = ? AND tipo = ? AND periodo_id = ?',
+                [grado_id, seccion, nombreMat, lapso.momento, 'cuantitativa', periodo_id]
               );
-              evaluacion_id = resEval.insertId;
-            }
 
-            // Evaluar la nota (Maneja I, N, EX, y números normales)
-            let valorFinal = 0;
-            if (notaStr === 'I' || notaStr === 'N') {
-              valorFinal = 0; // Incompleto o No presentó vale 0
-            } else if (notaStr === 'EX') {
-              valorFinal = 0; // Eximido
-            } else {
-              const parsed = parseFloat(notaStr);
-              valorFinal = isNaN(parsed) ? 0 : parsed;
-            }
+              let evaluacion_id;
+              if (evalRows.length > 0) {
+                evaluacion_id = evalRows[0].id;
+              } else {
+                const [resEval] = await conn.query(
+                  'INSERT INTO evaluaciones (docente_cedula, grado_id, seccion, materia, momento, nombre, tipo, puntaje_maximo, orden, periodo_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                  [docente_cedula, grado_id, seccion, nombreMat, lapso.momento, `${nombreMat} L${lapso.momento}`, 'cuantitativa', 20, 1, periodo_id]
+                );
+                evaluacion_id = resEval.insertId;
+              }
 
-            await conn.query(
-              `INSERT INTO notas_detalladas (evaluacion_id, estudiante_id, nota_valor) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE nota_valor = VALUES(nota_valor)`,
-              [evaluacion_id, estudiante_id, valorFinal]
-            );
+              const valorFinal = (notaValor === 'I' || notaValor === 'EX') ? 0 : parseFloat(notaValor);
+              if (!isNaN(valorFinal) || notaValor === 'I' || notaValor === 'EX') {
+                await conn.query(
+                  `INSERT INTO notas_detalladas (evaluacion_id, estudiante_id, nota_valor) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE nota_valor = VALUES(nota_valor)`,
+                  [evaluacion_id, estudiante_id, valorFinal]
+                );
+              }
+            }
           }
         }
         procesados++;
       } catch (innerError) {
-        console.error(`Error procesando fila (Cédula: ${row.CedAlu}):`, innerError.message);
+        console.error(`Error procesando fila:`, innerError.message);
         ignorados++;
       }
     }

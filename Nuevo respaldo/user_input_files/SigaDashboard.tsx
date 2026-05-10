@@ -5,12 +5,13 @@ import ResumenFinal31059 from './ResumenFinal31059';
 import AsignacionDocentes from './AsignacionDocentes'; // 🚀 NUEVO IMPORT
 import { 
   Clock, Cloud, Calendar as CalendarIcon, Bolt, Bell, 
-  FileText, ChartLine, Scroll, Book, Award, Landmark, 
+  FileText, ChartLine, Scroll, Book, Award, 
   ClipboardList, Plus, Printer, FileOutput, RefreshCw, 
-  PieChart, Settings, ChevronLeft, ChevronRight, School,
+  PieChart, Settings, ChevronLeft, ChevronRight,
   GraduationCap, AlertTriangle, CheckCircle, Users,
-  History, Search, Activity, BookOpen, UserPlus, IdCard,
-  FileCheck, LogOut, ClipboardCheck, Power, Star, TrendingUp, UserCheck // 🚀 NUEVO ÍCONO
+  History, Search, Activity, BookOpen, UserPlus,
+  FileCheck, LogOut, ClipboardCheck, Power, Star, TrendingUp,
+  UserCheck // 🚀 NUEVO ÍCONO
 } from 'lucide-react';
 import API_BASE_URL from '../apiConfig';
 import { ROUTE_PATHS, type Usuario } from '@/lib/index';
@@ -83,7 +84,7 @@ const AcademicCalendar = () => {
   );
 };
 
-// ─── Dashboard Control de Estudios ────────────────────────────────────────
+// ─── Dashboard del Docente ────────────────────────────────────────
  export default function SigaDashboard({ user, onLogout }: { user: Usuario; onLogout: () => void }) {
   const navigate = useNavigate();
   const [time, setTime] = useState(new Date());
@@ -138,19 +139,6 @@ const AcademicCalendar = () => {
 
   const actionsPrincipales = [
     {
-      title: 'Históricos y Egresados',
-      icon: GraduationCap,
-      items: [
-        { label: 'Verificar Calificaciones Históricas', path: '#' },
-        { label: 'Revisar Egresados Automáticos', path: '#' },
-        { label: 'Registrar Egresados (Manual)', path: '#' },
-        { label: 'Asignar Números de Título', path: '#' },
-        { label: 'Gestionar Promociones', path: '#' },
-        { label: 'Estadísticas de Egresados', path: '#' },
-        { label: 'Generar Título de Bachiller', path: '#' },
-      ]
-    },
-    {
       title: 'Boletines',
       icon: FileText,
       items: [
@@ -158,18 +146,29 @@ const AcademicCalendar = () => {
         { label: 'Imprimir Boletines', path: '#' },
         { label: 'Imprimir Boletines en Lote', path: '#' },
         { label: 'Mejores Promedios', path: ROUTE_PATHS.CUADRO_HONOR },
-        { label: 'Planillas Consejo de Curso', path: '#' },
+        { label: 'Sabana Consejo de Curso', path: '#' },
       ]
     },
     {
       title: 'Informes Descriptivos',
-      icon: ClipboardCheck,
+      icon: Scroll,
       items: [
         { label: 'Resumen Final', path: ROUTE_PATHS.REPORTES_MINISTERIO },
         { label: 'Historial Académico', path: ROUTE_PATHS.HISTORICO },
         { label: 'Notas Certificadas', path: '#' },
         { label: 'Notas Certificadas en Lote', path: '#' },
         { label: 'Riesgo Pedagógico', path: ROUTE_PATHS.SEMAFORO_RIESGO },
+      ]
+    },
+    {
+      title: 'Configuración',
+      icon: Scroll,
+      items: [
+        { label: 'Datos del Plantel', path: '#' },
+        { label: 'Periodo Escolar', path: '#' },
+        { label: 'Gestión de Usuarios y Perfiles', path: '#' },
+        { label: 'Periodo Escolar', path: '#' },
+        { label: 'Asignaturas del Plan', path: ROUTE_PATHS.PLANES_ESTUDIO },
       ]
     },
     {
@@ -186,57 +185,19 @@ const AcademicCalendar = () => {
       title: 'Materias Pendientes',
       icon: Book,
       items: [
-        { label: 'Listado de Estudiantes por Grado', path: '#' },
+        { label: 'Listado de Alumnos', path: '#' },
         { label: 'Actualizar Notas MP', path: ROUTE_PATHS.NOTAS_CARGA },
         { label: 'Traslado a Historial Académico', path: '#' },
       ]
     },
     {
-      title: 'Gestión de Identidad y Retiros',
-      icon: IdCard,
+      title: 'Títulos y Certificados',
+      icon: Award,
       items: [
-        { label: 'Cambio de CE a CI', path: '#' },
-        { label: 'Cambios de CI', path: '#' },
-        { label: 'Solicitud de Retiro', path: '#' },
-        { label: 'Cerrar Expediente y Archivar', path: '#' },
-        { label: 'Historial de Cambios de CI', path: ROUTE_PATHS.PLANES_ESTUDIO },
-        
-      ]
-    },
-    {
-      title: 'Matrícula y Nóminas',
-      icon: Landmark,
-      items: [
-        { label: 'Ficha de Registro del Estudiante', path: '#' },
-        { label: 'Ficha de Inscripción', path: '#' },
-        { label: 'Generar Nómina de Estudiantes', path: '#' },
-        { label: 'Generar Nómina por Grado', path: '#' },
-        { label: 'Planilla Evaluación + Asistencia', path: '#' },
-        { label: 'Planillas por Docente', path: '#' },
-      ]
-    },
-    {
-      title: 'Configuración Institucional',
-      icon: School,
-      items: [
-        { label: 'Datos del Plantel', path: '#' },
-        { label: 'Periodo Escolar', path: '#' },
-        { label: 'Planes de Estudio', path: '#' },
-        { label: 'Años (Grados) y Secciones', path: '#' },
-        { label: 'Cronograma Académico', path: '#' },
-        { label: 'Asignaturas', path: '#' },
-        { label: 'Áreas Académicas', path: '#' },
-        { label: 'Tipos de Evaluación', path: '#' },
-      ]
-    },
-    {
-      title: 'Administración del Sistema',
-      icon: Settings,
-      items: [
-        { label: 'Usuarios (Crear/Editar/Eliminar)', path: '#' },
-        { label: 'Perfiles de Acceso', path: '#' },
-        { label: 'Logs de Auditoría', path: '#' },
-        { label: 'Respaldos (Manual)', path: '#' },
+        { label: 'Registro de Egresados', path: '#' },
+        { label: 'Promociones de Grado', path: '#' },
+        { label: 'Diplomas y Menciones', path: '#' },
+        { label: 'Certificado Básica', path: '#' },
       ]
     }
   ];

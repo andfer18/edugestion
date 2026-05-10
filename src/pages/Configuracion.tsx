@@ -8,6 +8,10 @@ export default function Configuracion() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('institucion');
 
+  // 🚀 NUEVOS ESTADOS PARA LA IMPORTACIÓN
+  const [importGrado, setImportGrado] = useState('');
+  const [importSeccion, setImportSeccion] = useState('');
+
   const [instData, setInstData] = useState({
     nombre: 'COMPLEJO EDUCATIVO LA PAZ',
     codAdministrativo: '006565630',
@@ -179,18 +183,47 @@ export default function Configuracion() {
                   <Upload className="w-4 h-4" /> Importar Alumnos
                 </button>
 
+                {/* 🚀 NUEVOS SELECTS PARA BOLETÍN */}
+                <select value={importGrado} onChange={e => setImportGrado(e.target.value)} className="bg-amber-50 text-amber-800 px-3 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest border-2 border-amber-200 outline-none">
+                  <option value="">Grado...</option>
+                  <option value="16">1er Año</option>
+                  <option value="17">2do Año</option>
+                  <option value="18">3er Año</option>
+                  <option value="19">4to Año</option>
+                  <option value="20">5to Año</option>
+                </select>
+
+                <select value={importSeccion} onChange={e => setImportSeccion(e.target.value)} className="bg-amber-50 text-amber-800 px-3 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest border-2 border-amber-200 outline-none">
+                  <option value="">Secc...</option>
+                  {['A', 'B', 'C', 'D', 'E'].map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+
                 <input type="file" id="boletin-upload" accept=".xls, .xlsx" className="hidden" onChange={async (e) => {
                   const file = e.target.files?.[0]; if (!file) return;
+                  
+                  // Validación crucial
+                  if (!importGrado || !importSeccion) {
+                    alert('⚠️ Debe seleccionar el Grado y la Sección antes de importar el boletín.');
+                    e.target.value = ''; // Limpiar el input
+                    return;
+                  }
+
                   try {
                     const token = localStorage.getItem('siga_token'); if (!API_BASE_URL) { alert('❌ ERROR: API_BASE_URL no importada'); return; }
                     const formData = new FormData(); formData.append('archivo', file);
-                    const res = await fetch(`${API_BASE_URL}/api/importar/boletin`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: formData });
-const data = await res.json();
+                    
+                    // 🚀 LLAMADA MODIFICADA CON QUERY PARAMS
+                    const res = await fetch(`${API_BASE_URL}/api/importar/boletin?grado_id=${importGrado}&seccion=${importSeccion}`, { 
+                      method: 'POST', 
+                      headers: { Authorization: `Bearer ${token}` }, 
+                      body: formData 
+                    });
+                    const data = await res.json();
                     if (res.ok) { 
-  alert(`✅ ${data.mensaje}\nProcesados: ${data.procesados}\nNo encontrados (faltan en BD): ${data.noEncontrados}\nIgnorados: ${data.ignorados}`); 
-} else { 
-  alert(`❌ Error backend: ${data.error}`); 
-}
+                      alert(`✅ ${data.mensaje}\nProcesados: ${data.procesados}\nNo encontrados (faltan en BD): ${data.noEncontrados}\nIgnorados: ${data.ignorados}`); 
+                    } else { 
+                      alert(`❌ Error backend: ${data.error}`); 
+                    }
                   } catch (err) { console.error("❌ ERROR DE RED:", err); alert('Error de conexión.'); }
                 }} />
                 <button onClick={() => document.getElementById('boletin-upload')?.click()} className="bg-amber-50 text-amber-600 px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest border-2 border-amber-200 hover:bg-amber-100 transition flex items-center gap-2">
